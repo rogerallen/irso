@@ -1,13 +1,40 @@
 # irso
 
-FIXME: write description
+Irrational Songs in Overtone
+by Roger Allen
 
 ## Usage
 
 FIXME: write
 
+### Building LOCALSNAPSHOT overtone
+
+* how do I use the latest code in my own project?
+
+  cd ...local path to your.../overtone
+  edit project.clj to have version ending in "LOCALSNAPSHOT"
+  lein clean
+  lein deps
+  lein install
+    ...
+    Created .../overtone/overtone/overtone-0.7.0-LOCALSNAPSHOT.jar
+
+  cd .../explore_overtone/
+  lein clean
+
+  mvn install:install-file \
+    -Dfile=../../overtone/overtone-0.7.0-LOCALSNAPSHOT.jar \
+    -DartifactId=overtone \
+    -Dversion=0.7.0-LOCALSNAPSHOT \
+    -DgroupId=overtone \
+    -Dpackaging=jar \
+    -DlocalRepositoryPath=maven_repository
+
+  lein deps
+  lein repl
+
 ## License
 
-Copyright (C) 2012 FIXME
+Copyright (C) 2012 Roger Allen
 
 Distributed under the Eclipse Public License, the same as Clojure.
