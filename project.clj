@@ -5,4 +5,5 @@
                   [overtone "0.7.0-LOCALSNAPSHOT"]
                   ]
   :plugins [ [lein-swank "1.4.4"] ]
+  :main irso.core
   )
