@@ -3,35 +3,45 @@
 An Album of Irrational Songs in Overtone
 by Roger Allen
 
+I am going to explore using irrational numbers as a basis for musical
+melodies.  I want to use only Overtone to create the audio, so the
+source code will be the score.  I like ambient soundscape music and
+I'd like to create an album of songs here.  The plan is basically:
+arrange the songs, add effects, do post-production, then release.
+
+We'll see where this goes.
+
 ## Usage
 
-FIXME: write
+At some point lein run will create live music or mp3 audio that you
+can take with you.  Right now, if you are interested you should browse
+the source and play at the repl.
 
-### Building LOCALSNAPSHOT overtone
+## Building LOCALSNAPSHOT overtone
 
-* how do I use the latest code in my own project?
+0.6.0 has issues with sampled-piano, so I use a local 0.7.0 build.
 
-  cd ...local path to your.../overtone
-  edit project.clj to have version ending in "LOCALSNAPSHOT"
-  lein clean
-  lein deps
-  lein install
-    ...
-    Created .../overtone/overtone/overtone-0.7.0-LOCALSNAPSHOT.jar
+cd ...local path to your.../overtone
+edit project.clj to have version ending in "LOCALSNAPSHOT"
+lein clean
+lein deps
+lein install
+  ...
+  Created .../overtone/overtone/overtone-0.7.0-LOCALSNAPSHOT.jar
 
-  cd .../explore_overtone/
-  lein clean
+cd .../explore_overtone/
+lein clean
 
-  mvn install:install-file \
-    -Dfile=../../overtone/overtone-0.7.0-LOCALSNAPSHOT.jar \
-    -DartifactId=overtone \
-    -Dversion=0.7.0-LOCALSNAPSHOT \
-    -DgroupId=overtone \
-    -Dpackaging=jar \
-    -DlocalRepositoryPath=maven_repository
+mvn install:install-file \
+  -Dfile=../../overtone/overtone-0.7.0-LOCALSNAPSHOT.jar \
+  -DartifactId=overtone \
+  -Dversion=0.7.0-LOCALSNAPSHOT \
+  -DgroupId=overtone \
+  -Dpackaging=jar \
+  -DlocalRepositoryPath=maven_repository
 
-  lein deps
-  lein repl
+lein deps
+lein repl
 
 ## License
 
