@@ -21,16 +21,22 @@
      b004 (play-seq sampled-piano m (+ 2 b003) seq3)
      b005 (play-seq sampled-piano m b004 seq3)
      foo (println "introduction from" beat "to" b005)
-     
+
+     ;; hole from 340-390
      b010 (+ 2 b005)
-     b011 (+ b010 (* 3 (num-beats seq1)))
-     b012 (+ b010 (* 5 (num-beats seq1)))
-     b013 (play-repeated-snote-seq sampled-piano m b010 tonic type seq1 3 pi-1000)
-     b014 (play-repeated-snote-seq sampled-piano m b011 tonic type seq2 2 pi-1000)
-     b015 (play-repeated-snote-seq sampled-piano m b012 tonic type seq3 2 pi-1000)
+     b011 (+ b010 (* 1 (num-beats seq1)))
+     b012 (+ b010 (* 2 (num-beats seq1)))
+     b013 (play-repeated-snote-seq sampled-piano m b010 tonic type seq1 4 pi-1000)
+     b014 (play-repeated-snote-seq sampled-piano m b011 tonic type seq2 2
+                                   (drop (count seq1) pi-1000))
+     b015 (play-repeated-snote-seq sampled-piano m b012 tonic type seq3 3
+                                   (drop (+ (count seq1) (count seq2)) pi-1000))
      foo (println "theme from" b010 "to" (max b013 b014 b015))
+     foo (println "  theme1 from" b010 "to" b013)
+     foo (println "  theme2 from" b011 "to" b014)
+     foo (println "  theme3 from" b012 "to" b015)
               
-     b020 (play-seq sampled-piano m (+ 4 b015) seq3)
+     b020 (play-seq sampled-piano m (+ 4 (min b013 b014 b015)) seq3)
      b021 (play-seq sampled-piano m b020 seq3)
      b022 (play-seq sampled-piano m (+ 4 b021) seq2)
      b023 (play-seq sampled-piano m b022 seq2)
