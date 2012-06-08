@@ -2,22 +2,28 @@
   (:use [overtone.core]))
 ;; hint (use :reload-all 'irso.core)
 
-;; need to do this on startup
-;; (use 'irso.core)
-;; (use 'overtone.core)
-;; (connect-external-server 57110)
+;; paste these into the repl (not C-x C-e)
+#_(
+   (use 'irso.core)
+   (use 'overtone.core)
+   (connect-external-server 57110)
 
-;; (use 'irso.eso)
-;; (def m (play-eso))
-;; then use (m) to see what the current beat is
-;; (use 'irso.piso)
-;; (def m (play-piso))
-;; (use 'irso.sqrt2so)
-;; (def m (play-sqrt2so))
-;; (use 'irso.sqrt3so)
-;; (def m (play-sqrt3so))
-;; (use 'irso.tauso)
-;; (def m (play-tauso))
+   (use 'irso.eso)
+   (def m (play-eso))
+   ;;then use (m) to see what the current beat is
+
+   (use 'irso.piso)
+   (def m (play-piso))
+
+   (use 'irso.sqrt2so)
+   (def m (play-sqrt2so))
+
+   (use 'irso.sqrt3so)
+   (def m (play-sqrt3so))
+
+   (use 'irso.tauso)
+   (def m (play-tauso))
+)
 
 ;; a variety of irrational numbers to 1000 digits...
 (def pi-1000 '(3 1 4 1 5 9 2 6 5 3 5 8 9 7 9 3 2 3 8 4 6 2 6 4 3 3 8 3
@@ -175,40 +181,47 @@
   7 5 0 5 1 0 1 1 5 7 4 7 7 0 4 1 7 1 8 9 8 6 1 0 6 8 7 3 9 6 9 6 5 5
   2 1 2 6 7 1 5 4 6 8 8 9 5 7 0 3 5 0 3 5))
 
-(defn linear-map [x0 x1 y0 y1 x]
-  "given x0 -> y0.  x1 -> y1.  x maps linearly to y"
+(defn linear-map
+  "given points (x0,y0), (x1,y1) calculate linear relation y given x"
+  [x0 x1 y0 y1 x]
   (let [dydx (/ (- y1 y0) (- x1 x0))
         dx (- x x0)]
     (+ y0 (* dydx dx))))
         
 ;; change to play the first digits as pitches
-(defn digits2inotes [digit-seq]
+(defn digits2inotes
   "given a list of digits, make it into a list of index notes"
+  [digit-seq]
   (let [n (int (/ (count digit-seq) 3))]
     (map #(hash-map :pitch-index %1 :velocity-index %2 :duration-index %3)
          (take n digit-seq)
          (take n (drop n digit-seq))
          (take n (drop (* 2 n) digit-seq)))))
 
-(defn index2pitch [tonic type index]
+(defn index2pitch
   "given a digit in range 0..9 find index in scale defined by
      tonic & type.  E.g. (index2pitch :c4 :major 1) -> 62"
+  [tonic type index]
   (nth (vec (scale tonic type (range 1 10))) (mod index 10)))
 
-(defn index2velocity [index]
+(defn index2velocity
   "given a digit 'n' in range 0..9, find a velocity to play"
+  [index]
   (+ 80 (* 3 index)))
 
-(defn velocity2attack [v]
+(defn velocity2attack
   "sampled-piano uses attack & level, not velocity"
+  [v]
   (linear-map 0 127 0.2 0.05 v))
 
-(defn velocity2level [v]
+(defn velocity2level
   "sampled-piano uses attack & level, not velocity"
+  [v]
   (linear-map 0 127 0.0 0.8 v))
 
-(defn index2duration [index]
+(defn index2duration
   "given a digit 'n' in range 0..9, find a length in beats"
+  [index]
   (cond ;; pick one below...
     ;;        0    1    2    3    4    5    6    7    8    9
     false ([ 4.00 2.00 1.33 1.00 0.80 0.66 0.57 0.50 0.44 0.40] index)  ;; 1/f
@@ -216,44 +229,48 @@
     true ([ 4.00 2.00 1.50 1.00 0.75 0.75 0.50 0.50 0.50 0.50] index)  ;; 8x range
     false  ([ 4.00 2.00 1.50 1.50 1.25 1.25 1.00 1.00 1.00 1.00] index))) ;; 4x range
 
-(defn inote2snote [tonic type cur-inote]
+(defn inote2snote
   "given an index-note, create a sequence-note with a place for a beat."
+  [tonic type cur-inote]
   (hash-map
    :pitch (index2pitch tonic type (:pitch-index cur-inote))
    :velocity (index2velocity (:velocity-index cur-inote))
    :duration (index2duration (:duration-index cur-inote))
    :beat 0))
 
-(defn duration2beat [cur-snote nxt-snote]
+(defn duration2beat
   "given 2 sequence notes, update the nxt beat"
+  [cur-snote nxt-snote]
   (hash-map
    :pitch (:pitch nxt-snote)
    :velocity (:velocity nxt-snote)
    :duration (:duration nxt-snote)
    :beat (+ (:duration cur-snote) (:beat cur-snote))))
 
-(defn num-beats [snote-seq]
+(defn num-beats
   "how long is a snote sequence? last duration + last beat"
+  [snote-seq]
   (let [last-snote (last snote-seq)]
     (+ (:beat last-snote) (:duration last-snote))))
 
-(defn calc-seq [tonic type num-beats offset the-series]
-  "calc some seq-notes in a certain key. doall to remove laziness. returns a list of
-   (pitch velocity duration curbeat) values"
+(defn calc-seq
+  "calc some seq-notes in a certain key up to max-beats in duration from the-series values. returns a list of seq-note values with laziness removed."
+  [tonic type max-beats the-series]
   (doall (for [ n (reductions duration2beat
                               (map #(inote2snote tonic type %)
-                                   (nthrest (digits2inotes the-series) offset)))
-               :while (< (:beat n) num-beats)]
-           (if (> (+ (:beat n) (:duration n)) num-beats)
+                                   (digits2inotes the-series)))
+               :while (< (:beat n) max-beats)]
+           (if (> (+ (:beat n) (:duration n)) max-beats)
              (hash-map
               :pitch (:pitch n)
               :velocity (:velocity n)
-              :duration (- num-beats (:beat n))
+              :duration (- max-beats (:beat n))
               :beat (:beat n))
              n))))
 
-(defn play-seq [inst m beat snote-seq]
+(defn play-seq
   "play a list of (pitch velocity duration curbeat) where snote-seq is offset by beat"
+  [inst m beat snote-seq]
   (last ; return beat following sequence
    (for [cur-snote snote-seq]
      (let [cur-pitch (:pitch cur-snote)
@@ -264,16 +281,15 @@
            k-beat 1.6]
        ;;(println "note-on:" beat cur-beat cur-pitch cur-snote)
        (at (m cur-beat) (def pk (inst :note cur-pitch
-                                               :level cur-level
-                                               :attack cur-attack)))
+                                      :level cur-level
+                                      :attack cur-attack)))
        ;;(println "note-off:" (+ cur-beat (* k-beat cur-dur)))
        (at (m (+ cur-beat (* k-beat cur-dur))) (ctl pk :gate 0))
        (+ cur-beat cur-dur)))))
   
-(defn ^:dynamic play-repeated-snote-seq
-  [inst m beat tonic type snote-seq num-play-rests irno-seq]
-  "given snote-seq and a count of play/rest pairs to derive from number sequence irno-seq,
-   play that sequence repeatedly."
+(defn ^:dynamic calc-seq-irno-repeat
+  "given snote-seq and a count of play/rest pairs, find play/rest counts from irno-seq.  Calc play/rest seq & return new snote-seq."
+  [start-beat snote-seq num-play-rests irno-seq]
   (let [snote-seq-len (num-beats snote-seq)
         subset-irno-seq (take (* 2 num-play-rests) irno-seq)
         ;; 3 1 4 1 5 9 -> repeat-counts = 3 4 5, rest-counts = 1 1 9
@@ -285,11 +301,11 @@
                                   (map range repeat-counts)
                                   rest-count-sums))]
     ;;(println "snote-seq indexes & len" seq-indexes snote-seq-len)
-    (last ; return beat following sequence
-     (for [cur-index seq-indexes]
-       (let [cur-beat (+ beat (* cur-index snote-seq-len))]
-         ;;(println "play" cur-index ":" cur-beat)
-         (play-seq inst m cur-beat snote-seq)
-         (+ cur-beat snote-seq-len))))))
-
-
+    (doall (for [cur-index seq-indexes
+                 cur-snote snote-seq]
+             (hash-map
+              :pitch (:pitch cur-snote)
+              :velocity (:velocity cur-snote)
+              :duration (:duration cur-snote)
+              :beat (+ (+ start-beat (* cur-index snote-seq-len))
+                       (:beat cur-snote)))))))

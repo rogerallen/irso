@@ -9,10 +9,10 @@
 ;; the song
 (defn ^:dynamic eso [m beat tonic type]
   (let
-    [seq1 (calc-seq tonic type 13 0 e-1000)
-     seq2 (calc-seq tonic type 17 (count seq1) e-1000)
-     seq3 (calc-seq tonic type 19 (+ (count seq1)
-                                     (count seq2)) e-1000)
+    [seq1 (calc-seq tonic type 13 e-1000)
+     seq2 (calc-seq tonic type 17 (drop (count seq1) e-1000))
+     seq3 (calc-seq tonic type 19 (drop (+ (count seq1)
+                                           (count seq2)) e-1000))
      foo (println "e song")
      
      b000 (play-seq sampled-piano m beat seq1)
@@ -23,16 +23,17 @@
      b005 (play-seq sampled-piano m b004       seq3)
      foo (println "introduction from" beat "to" b005)
 
-     ;; dead space 
+     ;; big hole 100-200
      b010 (+ 2 b005)
      b011 (+ b010 (* 1 (num-beats seq1)))
      b012 (+ b010 (* 2 (num-beats seq1)))
-     b013 (play-repeated-snote-seq sampled-piano m b010 tonic type seq1 3 e-1000)
-     b014 (play-repeated-snote-seq sampled-piano m b011 tonic type seq2 3
-                                   (drop (count seq1) e-1000))
-     b015 (play-repeated-snote-seq sampled-piano m b012 tonic type seq3 2
-                                   (drop (+ (count seq1)
-                                            (count seq2)) e-1000))
+     seq1r (calc-seq-irno-repeat b010 seq1 3 e-1000)
+     seq2r (calc-seq-irno-repeat b011 seq2 3 (drop (count seq1) e-1000))
+     seq3r (calc-seq-irno-repeat b012 seq3 2 (drop (+ (count seq1)
+                                                      (count seq2)) e-1000))
+     b013 (play-seq sampled-piano m b010 seq1r)
+     b014 (play-seq sampled-piano m b011 seq2r)
+     b015 (play-seq sampled-piano m b012 seq3r)
      b018 (max b013 b014 b015)
      foo (println "theme from" b010 "to" b018)
      foo (println "  theme1 from" b010 "to" b013)
