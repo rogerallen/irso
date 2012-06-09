@@ -9,9 +9,11 @@
 ;; the song
 (defn ^:dynamic sqrt3so [m beat tonic type]
   (let
-    [seq1 (calc-seq tonic type 13 0 sqrt3-1000)
-     seq2 (calc-seq tonic type 17 (count seq1) sqrt3-1000)
-     seq3 (calc-seq tonic type 15 (+ (count seq1) (count seq2)) sqrt3-1000)
+    [irno-seq sqrt3-1000
+     seq1 (calc-seq tonic type 13 irno-seq)
+     seq2 (calc-seq tonic type 17 (drop (count seq1) irno-seq))
+     seq3 (calc-seq tonic type 15 (drop (+ (count seq1)
+                                           (count seq2)) irno-seq))
      foo (println "sqrt3 song")
      
      b000 (play-seq sampled-piano m beat seq1)
@@ -26,24 +28,27 @@
      b010 (+ 2 b005)
      b011 (+ b010 (* 3 (num-beats seq1)))
      b012 (+ b010 (* 5 (num-beats seq1)))
-     ;; is b013 geting set right?
-     b013 (play-repeated-snote-seq sampled-piano m b010 tonic type seq1 5 sqrt3-1000)
-     b014 (play-repeated-snote-seq sampled-piano m b011 tonic type seq2 2
-                                   (drop (count seq1) sqrt3-1000))
-     b015 (play-repeated-snote-seq sampled-piano m b012 tonic type seq3 2
-                                   (drop (+ (count seq1) (count seq2)) sqrt3-1000))
-     foo (println "theme from" b010 "to" (max b013 b014 b015))
+     seq1r (calc-seq-irno-repeat b010 seq1 5 irno-seq)
+     seq2r (calc-seq-irno-repeat b011 seq2 2 (drop (count seq1) irno-seq))
+     seq3r (calc-seq-irno-repeat b012 seq3 2 (drop (+ (count seq1)
+                                                      (count seq2)) irno-seq))
+     b013 (play-seq sampled-piano m b010 seq1r)
+     b014 (play-seq sampled-piano m b011 seq2r)
+     b015 (play-seq sampled-piano m b012 seq3r)
+     b018 (max b013 b014 b015)
+     foo (println "theme from" b010 "to" b018)
      foo (println "  theme1 from" b010 "to" b013)
      foo (println "  theme2 from" b011 "to" b014)
      foo (println "  theme3 from" b012 "to" b015)     
 
-     b020 (play-seq sampled-piano m (+ 4 (min b013 b014 b015)) seq3)
-     b021 (play-seq sampled-piano m b020 seq3)
-     b022 (play-seq sampled-piano m (+ 4 b021) seq2)
-     b023 (play-seq sampled-piano m b022 seq2)
-     b024 (play-seq sampled-piano m (+ 4 b023) seq1)
-     b025 (play-seq sampled-piano m b024 seq1)
-     foo (println "conclusion from" b015 "to" b025)]
+     b020 (min b013 b014 b015)
+     b022 (play-seq sampled-piano m (+ 4 b020) seq3)
+     b023 (play-seq sampled-piano m b022 seq3)
+     b024 (play-seq sampled-piano m (+ 4 b023) seq2)
+     b025 (play-seq sampled-piano m b024 seq2)
+     b026 (play-seq sampled-piano m (+ 4 b025) seq1)
+     b027 (play-seq sampled-piano m b026 seq1)
+     foo (println "conclusion from" b020 "to" b027)]
     nil))
 
 ;; ======================================================================

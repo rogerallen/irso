@@ -3,16 +3,15 @@
   (:use [overtone.core])
   (:use [overtone.inst.sampled-piano])) ;; requires 0.7.0. downloads 200MB
 
-;;(use 'irso.core)
-
 ;; ======================================================================
 ;; the song
 (defn ^:dynamic eso [m beat tonic type]
   (let
-    [seq1 (calc-seq tonic type 13 e-1000)
-     seq2 (calc-seq tonic type 17 (drop (count seq1) e-1000))
+    [irno-seq e-1000
+     seq1 (calc-seq tonic type 13 irno-seq)
+     seq2 (calc-seq tonic type 17 (drop (count seq1) irno-seq))
      seq3 (calc-seq tonic type 19 (drop (+ (count seq1)
-                                           (count seq2)) e-1000))
+                                           (count seq2)) irno-seq))
      foo (println "e song")
      
      b000 (play-seq sampled-piano m beat seq1)
@@ -27,10 +26,10 @@
      b010 (+ 2 b005)
      b011 (+ b010 (* 1 (num-beats seq1)))
      b012 (+ b010 (* 2 (num-beats seq1)))
-     seq1r (calc-seq-irno-repeat b010 seq1 3 e-1000)
-     seq2r (calc-seq-irno-repeat b011 seq2 3 (drop (count seq1) e-1000))
+     seq1r (calc-seq-irno-repeat b010 seq1 3 irno-seq)
+     seq2r (calc-seq-irno-repeat b011 seq2 3 (drop (count seq1) irno-seq))
      seq3r (calc-seq-irno-repeat b012 seq3 2 (drop (+ (count seq1)
-                                                      (count seq2)) e-1000))
+                                                      (count seq2)) irno-seq))
      b013 (play-seq sampled-piano m b010 seq1r)
      b014 (play-seq sampled-piano m b011 seq2r)
      b015 (play-seq sampled-piano m b012 seq3r)
@@ -47,7 +46,7 @@
      b025 (play-seq sampled-piano m b024 seq2)
      b026 (play-seq sampled-piano m (+ 4 b025) seq1)
      b027 (play-seq sampled-piano m b026 seq1)
-     foo (println "conclusion from" b018 "to" b027)]
+     foo (println "conclusion from" b020 "to" b027)]
     nil))
 
 ;; ======================================================================
@@ -61,6 +60,4 @@
   (let [metro (metronome 80)]
     (eso metro (metro) :c3 :pentatonic)
     metro))
-;; (play-eso)
-;; (stop)
 
