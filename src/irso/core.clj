@@ -289,7 +289,7 @@
   
 (defn ^:dynamic calc-seq-irno-repeat
   "given snote-seq and a count of play/rest pairs, find play/rest counts from irno-seq.  Calc play/rest seq & return new snote-seq."
-  [start-beat snote-seq num-play-rests irno-seq]
+  [snote-seq num-play-rests irno-seq]
   (let [snote-seq-len (num-beats snote-seq)
         subset-irno-seq (take (* 2 num-play-rests) irno-seq)
         ;; 3 1 4 1 5 9 -> repeat-counts = 3 4 5, rest-counts = 1 1 9
@@ -307,5 +307,4 @@
               :pitch (:pitch cur-snote)
               :velocity (:velocity cur-snote)
               :duration (:duration cur-snote)
-              :beat (+ (+ start-beat (* cur-index snote-seq-len))
-                       (:beat cur-snote)))))))
+              :beat (+ (* cur-index snote-seq-len) (:beat cur-snote)))))))

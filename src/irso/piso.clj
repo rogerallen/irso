@@ -14,6 +14,9 @@
      seq2 (calc-seq tonic type 17 (drop (count seq1) irno-seq))
      seq3 (calc-seq tonic type 19 (drop (+ (count seq1)
                                            (count seq2)) irno-seq))
+     seq1r (calc-seq-irno-repeat seq1 4 irno-seq)
+     seq2r (calc-seq-irno-repeat seq2 2 (drop 4 irno-seq))
+     seq3r (calc-seq-irno-repeat seq3 2 (drop (+ 4 2) irno-seq))
      foo (println "pi song")
      
      b000 (play-seq sampled-piano m beat seq1)
@@ -24,14 +27,10 @@
      b005 (play-seq sampled-piano m b004 seq3)
      foo (println "introduction from" beat "to" b005)
 
-     ;; hole from 340-390
+     ;; hole from ~210-220?
      b010 (+ 2 b005)
      b011 (+ b010 (* 1 (num-beats seq1)))
      b012 (+ b010 (* 2 (num-beats seq1)))
-     seq1r (calc-seq-irno-repeat b010 seq1 4 irno-seq)
-     seq2r (calc-seq-irno-repeat b011 seq2 2 (drop (count seq1) irno-seq))
-     seq3r (calc-seq-irno-repeat b012 seq3 3 (drop (+ (count seq1)
-                                                      (count seq2)) irno-seq))
      b013 (play-seq sampled-piano m b010 seq1r)
      b014 (play-seq sampled-piano m b011 seq2r)
      b015 (play-seq sampled-piano m b012 seq3r)
