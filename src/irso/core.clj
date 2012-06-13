@@ -23,6 +23,12 @@
 
    (use 'irso.tauso)
    (def m (play-tauso))
+
+   (use :reload-all 'irso.test.core)
+   (test-calc-seq)
+   (test-offset-seq)
+   (test-num-beats)
+   (test-concat-seq)
 )
 
 ;; a variety of irrational numbers to 1000 digits...
@@ -239,14 +245,55 @@
    :beat 0))
 
 (defn duration2beat
-  "given 2 sequence notes, update the nxt beat"
+  "given 2 sequence notes, overwrite the nxt beat"
   [cur-snote nxt-snote]
-  (hash-map
-   :pitch (:pitch nxt-snote)
-   :velocity (:velocity nxt-snote)
-   :duration (:duration nxt-snote)
-   :beat (+ (:duration cur-snote) (:beat cur-snote))))
+  (assoc nxt-snote :beat (+ (:duration cur-snote) (:beat cur-snote))))
 
+(defn duration2beat2
+  "given 2 sequence notes, increment the value of nxt beat"
+  [cur-snote nxt-snote]
+  (assoc nxt-snote
+    :beat (+ (:duration cur-snote) (:beat cur-snote) (:beat nxt-snote))))
+
+(defn delta2beat
+  "given 2 sequence notes, leave only the beat of nxt-snote beyond what cur-snote duration implies"
+  [cur-snote nxt-snote]
+  (assoc nxt-snote
+    :beat2 (- (:beat nxt-snote) (+ (:duration cur-snote) (:beat cur-snote)))))
+
+(defn zero-beat-snote
+  "given an snote, zero out the :beat"
+  [cur-snote]
+  (assoc cur-snote :beat 0.0))
+
+(defn zero-beats-rest-seq
+  "given a snote-seq, zero out all the beats that are contiguous and
+  can be calculated via :duration, leaving only the beats that
+  describe rest beats.  For use in concat-seq."
+  [snote-seq]
+  (drop 1
+        (reductions #(dissoc (assoc %2 :beat (:beat2 %2)) :beat2)
+                    ;; create intermediate beat2, remove in prev reduction
+                    (reductions #(assoc %2
+                                   :beat2 (- (:beat %2) (+ (:duration %1) (:beat %1))))
+                                {:duration 0 :beat 0 :beat2 0} ;; init
+                                snote-seq))))
+
+(defn concat-seq
+  "given a seq of snote-seq's that should start relative to beat 0,
+  join them all into one larger sequence.  Need duration2beat2 in
+  order to allow use of offset-seq in the list of inputs."
+  [& zs]
+  (reductions duration2beat2 (apply concat (map zero-beats-rest-seq zs))))
+
+(defn offset-seq
+  "given a snote-seq and beat, return a sequence that is offset by that beat"
+  [beat snote-seq]
+  (reductions duration2beat
+              (conj (rest snote-seq)  ;; FIXME cons?
+                    (assoc (first snote-seq)
+                      :beat (+ beat (:beat (first snote-seq)))))))
+                    
 (defn num-beats
   "how long is a snote sequence? last duration + last beat"
   [snote-seq]
@@ -254,41 +301,20 @@
     (+ (:beat last-snote) (:duration last-snote))))
 
 (defn calc-seq
-  "calc some seq-notes in a certain key up to max-beats in duration from the-series values. returns a list of seq-note values with laziness removed."
+  "calc some seq-notes in a certain key up to max-beats in duration
+  from the-series values. returns a lazy list of seq-note values."
   [tonic type max-beats the-series]
-  (doall (for [ n (reductions duration2beat
-                              (map #(inote2snote tonic type %)
-                                   (digits2inotes the-series)))
-               :while (< (:beat n) max-beats)]
-           (if (> (+ (:beat n) (:duration n)) max-beats)
-             (hash-map
-              :pitch (:pitch n)
-              :velocity (:velocity n)
-              :duration (- max-beats (:beat n))
-              :beat (:beat n))
-             n))))
+  (for [ n (reductions duration2beat
+                       (map #(inote2snote tonic type %)
+                            (digits2inotes the-series)))
+        :while (< (:beat n) max-beats)]
+    (if (> (+ (:beat n) (:duration n)) max-beats)
+      (assoc n :duration (- max-beats (:beat n)))
+      n)))
 
-(defn play-seq
-  "play a list of (pitch velocity duration curbeat) where snote-seq is offset by beat"
-  [inst m beat snote-seq]
-  (last ; return beat following sequence
-   (for [cur-snote snote-seq]
-     (let [cur-pitch (:pitch cur-snote)
-           cur-attack (velocity2attack (:velocity cur-snote))
-           cur-level (velocity2level (:velocity cur-snote))
-           cur-dur (:duration cur-snote)
-           cur-beat (+ beat (:beat cur-snote))
-           k-beat 1.6]
-       ;;(println "note-on:" beat cur-beat cur-pitch cur-snote)
-       (at (m cur-beat) (def pk (inst :note cur-pitch
-                                      :level cur-level
-                                      :attack cur-attack)))
-       ;;(println "note-off:" (+ cur-beat (* k-beat cur-dur)))
-       (at (m (+ cur-beat (* k-beat cur-dur))) (ctl pk :gate 0))
-       (+ cur-beat cur-dur)))))
-  
 (defn ^:dynamic calc-seq-irno-repeat
-  "given snote-seq and a count of play/rest pairs, find play/rest counts from irno-seq.  Calc play/rest seq & return new snote-seq."
+  "given snote-seq and a count of play/rest pairs, find play/rest
+  counts from irno-seq.  Calc play/rest seq & return new snote-seq."
   [snote-seq num-play-rests irno-seq]
   (let [snote-seq-len (num-beats snote-seq)
         subset-irno-seq (take (* 2 num-play-rests) irno-seq)
@@ -301,10 +327,33 @@
                                   (map range repeat-counts)
                                   rest-count-sums))]
     ;;(println "snote-seq indexes & len" seq-indexes snote-seq-len)
-    (doall (for [cur-index seq-indexes
-                 cur-snote snote-seq]
-             (hash-map
-              :pitch (:pitch cur-snote)
-              :velocity (:velocity cur-snote)
-              :duration (:duration cur-snote)
-              :beat (+ (* cur-index snote-seq-len) (:beat cur-snote)))))))
+    (for [cur-index seq-indexes
+          cur-snote snote-seq]
+      (assoc cur-snote :beat (+ (* cur-index snote-seq-len) (:beat cur-snote))))))
+
+(defn play-seq
+  "play a list of (pitch velocity duration curbeat) where snote-seq is offset by beat"
+  [inst m beat lazy-snote-seq]
+  (last ; return beat following sequence
+   (let [snote-seq (doall lazy-snote-seq)] ;; remove laziness here
+     (for [cur-snote snote-seq]
+       (let [cur-pitch (:pitch cur-snote)
+             cur-attack (velocity2attack (:velocity cur-snote))
+             cur-level (velocity2level (:velocity cur-snote))
+             cur-dur (:duration cur-snote)
+             cur-beat (+ beat (:beat cur-snote))
+             k-beat 1.6]
+         ;;(println "note-on:" beat cur-beat cur-pitch cur-snote)
+         (at (m cur-beat) (def pk (inst :note cur-pitch
+                                        :level cur-level
+                                        :attack cur-attack)))
+         ;;(println "note-off:" (+ cur-beat (* k-beat cur-dur)))
+         (at (m (+ cur-beat (* k-beat cur-dur))) (ctl pk :gate 0))
+         (+ cur-beat cur-dur))))))
+  
+(defn play-seqs
+  "play a list of snote-seq"
+  [inst m beat snote-seqs]
+  (last
+   (for [snote-seq snote-seqs]
+     (play-seq inst m beat snote-seq))))
