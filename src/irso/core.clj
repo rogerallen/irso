@@ -255,18 +255,7 @@
   (assoc nxt-snote
     :beat (+ (:duration cur-snote) (:beat cur-snote) (:beat nxt-snote))))
 
-(defn delta2beat
-  "given 2 sequence notes, leave only the beat of nxt-snote beyond what cur-snote duration implies"
-  [cur-snote nxt-snote]
-  (assoc nxt-snote
-    :beat2 (- (:beat nxt-snote) (+ (:duration cur-snote) (:beat cur-snote)))))
-
-(defn zero-beat-snote
-  "given an snote, zero out the :beat"
-  [cur-snote]
-  (assoc cur-snote :beat 0.0))
-
-(defn zero-beats-rest-seq
+(defn only-rest-beats
   "given a snote-seq, zero out all the beats that are contiguous and
   can be calculated via :duration, leaving only the beats that
   describe rest beats.  For use in concat-seq."
@@ -284,7 +273,7 @@
   join them all into one larger sequence.  Need duration2beat2 in
   order to allow use of offset-seq in the list of inputs."
   [& zs]
-  (reductions duration2beat2 (apply concat (map zero-beats-rest-seq zs))))
+  (reductions duration2beat2 (apply concat (map only-rest-beats zs))))
 
 (defn offset-seq
   "given a snote-seq and beat, return a sequence that is offset by that beat"
