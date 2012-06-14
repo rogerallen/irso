@@ -15,17 +15,50 @@
 
 (deftest test-offset-seq
   (are [offset in-seq result] (= result (offset-seq offset in-seq))
+       ;; test 1 inputs
        4 '({:pitch 1, :duration 1.0, :velocity 4, :beat 0.0}
            {:pitch 2, :duration 0.5, :velocity 5, :beat 1.0}
            {:pitch 3, :duration 2.0, :velocity 6, :beat 1.5})
+       ;; test 1 output
        '({:pitch 1, :duration 1.0, :velocity 4, :beat 4.0}
          {:pitch 2, :duration 0.5, :velocity 5, :beat 5.0}
          {:pitch 3, :duration 2.0, :velocity 6, :beat 5.5})
-       ;; FIXME add more
+       ;; test 2 inputs
+       4 '({:pitch 1, :duration 1.0, :velocity 4, :beat 0.0}
+           {:pitch 2, :duration 0.5, :velocity 5, :beat 5.0}
+           {:pitch 3, :duration 2.0, :velocity 6, :beat 10.5})
+       ;; test 1 output
+       '({:pitch 1, :duration 1.0, :velocity 4, :beat 4.0}
+         {:pitch 2, :duration 0.5, :velocity 5, :beat 9.0}
+         {:pitch 3, :duration 2.0, :velocity 6, :beat 14.5})
        ))
 
 (deftest test-num-beats
   (are [in-seq result] (= result (num-beats in-seq))
+       '({:pitch 0, :duration 1.0, :velocity 0, :beat 0.0}
+         {:pitch 0, :duration 0.5, :velocity 0, :beat 1.0}
+         {:pitch 0, :duration 2.0, :velocity 0, :beat 1.5})
+       3.5
+       '({:pitch 0, :duration 1.0, :velocity 0, :beat 4.0}
+         {:pitch 0, :duration 0.5, :velocity 0, :beat 5.0}
+         {:pitch 0, :duration 2.0, :velocity 0, :beat 5.5})
+       (- 7.5 4.0)
+       ))
+
+(deftest test-min-beat
+  (are [in-seq result] (= result (min-beat in-seq))
+       '({:pitch 0, :duration 1.0, :velocity 0, :beat 0.0}
+         {:pitch 0, :duration 0.5, :velocity 0, :beat 1.0}
+         {:pitch 0, :duration 2.0, :velocity 0, :beat 1.5})
+       0.0
+       '({:pitch 0, :duration 1.0, :velocity 0, :beat 4.0}
+         {:pitch 0, :duration 0.5, :velocity 0, :beat 5.0}
+         {:pitch 0, :duration 2.0, :velocity 0, :beat 5.5})
+       4.0 
+       ))
+
+(deftest test-max-beat
+  (are [in-seq result] (= result (max-beat in-seq))
        '({:pitch 0, :duration 1.0, :velocity 0, :beat 0.0}
          {:pitch 0, :duration 0.5, :velocity 0, :beat 1.0}
          {:pitch 0, :duration 2.0, :velocity 0, :beat 1.5})
@@ -113,3 +146,39 @@
            {:pitch 65, :duration 0.5, :velocity 86, :beat 9.0}
            {:pitch 77, :duration 0.5, :velocity 80, :beat 9.5}
            {:pitch 62, :duration 2.0, :velocity 92, :beat 10.0}))))
+
+(deftest test-irno-repeat
+  (is (= (calc-seq-irno-repeat (calc-seq :c3 :pentatonic 3 e-1000) 2 '(0 1 2 4))
+         '({:pitch 53, :duration 0.5, :velocity 86, :beat 0.0}
+           {:pitch 65, :duration 0.5, :velocity 80, :beat 0.5}
+           {:pitch 50, :duration 2.0, :velocity 92, :beat 1.0}
+           {:pitch 53, :duration 0.5, :velocity 86, :beat 9.0}
+           {:pitch 65, :duration 0.5, :velocity 80, :beat 9.5}
+           {:pitch 50, :duration 2.0, :velocity 92, :beat 10.0}
+           {:pitch 53, :duration 0.5, :velocity 86, :beat 12.0}
+           {:pitch 65, :duration 0.5, :velocity 80, :beat 12.5}
+           {:pitch 50, :duration 2.0, :velocity 92, :beat 13.0}
+           {:pitch 53, :duration 0.5, :velocity 86, :beat 15.0}
+           {:pitch 65, :duration 0.5, :velocity 80, :beat 15.5}
+           {:pitch 50, :duration 2.0, :velocity 92, :beat 16.0}))))
+
+(deftest test-concat-irno-repeat
+  (is (= (concat-seq
+          (calc-seq :c4 :pentatonic 3 e-1000)
+          (calc-seq-irno-repeat (calc-seq :c3 :pentatonic 3 e-1000) 2 '(0 1 2 4)))
+         '({:pitch 65, :duration 0.5, :velocity 86, :beat 0}
+           {:pitch 77, :duration 0.5, :velocity 80, :beat 0.5}
+           {:pitch 62, :duration 2.0, :velocity 92, :beat 1.0}
+           {:pitch 53, :duration 0.5, :velocity 86, :beat 3.0}
+           {:pitch 65, :duration 0.5, :velocity 80, :beat 3.5}
+           {:pitch 50, :duration 2.0, :velocity 92, :beat 4.0}
+           {:pitch 53, :duration 0.5, :velocity 86, :beat 12.0}
+           {:pitch 65, :duration 0.5, :velocity 80, :beat 12.5}
+           {:pitch 50, :duration 2.0, :velocity 92, :beat 13.0}
+           {:pitch 53, :duration 0.5, :velocity 86, :beat 15.0}
+           {:pitch 65, :duration 0.5, :velocity 80, :beat 15.5}
+           {:pitch 50, :duration 2.0, :velocity 92, :beat 16.0}
+           {:pitch 53, :duration 0.5, :velocity 86, :beat 18.0}
+           {:pitch 65, :duration 0.5, :velocity 80, :beat 18.5}
+           {:pitch 50, :duration 2.0, :velocity 92, :beat 19.0}))))
+      

@@ -28,7 +28,10 @@
    (test-calc-seq)
    (test-offset-seq)
    (test-num-beats)
+   (test-min-beat)
+   (test-max-beat)
    (test-concat-seq)
+   (test-concat-seq2)
 )
 
 ;; a variety of irrational numbers to 1000 digits...
@@ -276,29 +279,36 @@
   (reductions duration2beat2 (apply concat (map only-rest-beats zs))))
 
 (defn offset-seq
-  "given a snote-seq and beat, return a sequence that is offset by that beat"
-  [beat snote-seq]
-  (reductions duration2beat
-              (conj (rest snote-seq)  ;; FIXME cons?
-                    (assoc (first snote-seq)
-                      :beat (+ beat (:beat (first snote-seq)))))))
+  "given a snote-seq and offset, return a sequence that is offset by that beat"
+  [offset snote-seq]
+  (map #(assoc %1 :beat (+ offset (:beat %1))) snote-seq))
                     
-(defn num-beats
+(defn min-beat
+  "starting beat"
+  [snote-seq]
+  (:beat (first snote-seq)))
+
+(defn max-beat
   "how long is a snote sequence? last duration + last beat"
   [snote-seq]
   (let [last-snote (last snote-seq)]
     (+ (:beat last-snote) (:duration last-snote))))
 
+(defn num-beats
+  "how long is a snote sequence?"
+  [snote-seq]
+  (- (max-beat snote-seq) (min-beat snote-seq)))
+
 (defn calc-seq
-  "calc some seq-notes in a certain key up to max-beats in duration
+  "calc some seq-notes in a certain key up to num-beats in duration
   from the-series values. returns a lazy list of seq-note values."
-  [tonic type max-beats the-series]
+  [tonic type num-beats the-series]
   (for [ n (reductions duration2beat
                        (map #(inote2snote tonic type %)
                             (digits2inotes the-series)))
-        :while (< (:beat n) max-beats)]
-    (if (> (+ (:beat n) (:duration n)) max-beats)
-      (assoc n :duration (- max-beats (:beat n)))
+        :while (< (:beat n) num-beats)]
+    (if (> (+ (:beat n) (:duration n)) num-beats)
+      (assoc n :duration (- num-beats (:beat n)))
       n)))
 
 (defn ^:dynamic calc-seq-irno-repeat
@@ -306,7 +316,8 @@
   counts from irno-seq.  Calc play/rest seq & return new snote-seq."
   [snote-seq num-play-rests irno-seq]
   (let [snote-seq-len (num-beats snote-seq)
-        subset-irno-seq (take (* 2 num-play-rests) irno-seq)
+        ;; repeat something 1-4 times 1234123412
+        subset-irno-seq (map #(+ 1 (mod % 4)) (take (* 2 num-play-rests) irno-seq))
         ;; 3 1 4 1 5 9 -> repeat-counts = 3 4 5, rest-counts = 1 1 9
         repeat-counts (take-nth 2 subset-irno-seq)
         rest-count-sums (conj (take-nth 2 (drop 1 (reductions + subset-irno-seq))) 0)
@@ -333,6 +344,7 @@
              cur-beat (+ beat (:beat cur-snote))
              k-beat 1.6]
          ;;(println "note-on:" beat cur-beat cur-pitch cur-snote)
+         ;; FIXME (def pk ...) is not local to this routine.  
          (at (m cur-beat) (def pk (inst :note cur-pitch
                                         :level cur-level
                                         :attack cur-attack)))
@@ -346,3 +358,74 @@
   (last
    (for [snote-seq snote-seqs]
      (play-seq inst m beat snote-seq))))
+
+(defn draw-seqs [snote-seqs]
+  "Draw the sequences in snote-seqs"
+  (let [draw-w 1200
+        seq-w draw-w
+        seq-h 50
+        seq-space 10
+        seq-space2 4
+        draw-h (- (* (+ seq-h seq-space2) (count snote-seqs)) seq-space2)
+        w (+ (* 2 seq-space) draw-w)
+        h (+ (* 2 seq-space) draw-h)
+        max-seq-beats (reduce max (map max-beat snote-seqs))
+        ]
+    (doto (javax.swing.JFrame. "draw-seqs")
+      (.setContentPane 
+       (doto (proxy [javax.swing.JPanel] []
+               (paintComponent [^java.awt.Graphics g]
+                 (let [g (doto ^java.awt.Graphics2D (.create g)
+                               ;;(.scale 1.0 1.0)
+                               ;;(.translate 5.0 5.0)
+                               (.setStroke (java.awt.BasicStroke. 2.0)))
+                       ]
+                   (.setColor g (java.awt.Color. 0x93 0xa1 0xa1))
+                   (.fillRect g 0 0 w h)
+                   (.setColor g (java.awt.Color. 0x65 0x7b 0x83))
+                   (.fillRoundRect g seq-space seq-space draw-w draw-h 9 9)
+                   (doseq [[i [cur-min-beat cur-num-beats cur-seq]]
+                           (map-indexed vector
+                                        (map vector
+                                             (map min-beat snote-seqs)
+                                             (map num-beats snote-seqs)
+                                             snote-seqs))]
+                     ;;(println "aaa" i cur-num-beats)
+                     (let [x0 (+ seq-space (* seq-w (/ cur-min-beat max-seq-beats)))
+                           x1 (* seq-w (/ cur-num-beats max-seq-beats))
+                           y0 (+ seq-space (* (+ seq-h seq-space2) i))
+                           y1 seq-h]
+                       ;;(println i "drawRect" x0 y0 x1 y1)
+                       (.setStroke g (java.awt.BasicStroke. 1.4))
+                       (.setColor g (java.awt.Color. 0xee 0xe8 0xd5))
+                       (.fillRoundRect g x0 y0 x1 y1 9 9)
+                       (.setColor g (java.awt.Color. 0x07 0x36 0x42))
+                       (.drawRoundRect g x0 y0 x1 y1 9 9)
+                       (doseq [snote cur-seq]
+                         (let [nx0 (+ seq-space
+                                      (* seq-w (/ (:beat snote) max-seq-beats)))
+                               nx1 (+ seq-space
+                                      (* seq-w (/ (+ (:beat snote) (:duration snote))
+                                                  max-seq-beats)))
+                               ny (- (+ y0 y1)
+                                     (* seq-h (/ (:pitch snote) 127)))]
+                           (.setColor g (nth (list
+                                              (java.awt.Color. 0xb5 0x89 0x00)
+                                              (java.awt.Color. 0xcb 0x4b 0x16)
+                                              (java.awt.Color. 0xdc 0x32 0x2f)
+                                              (java.awt.Color. 0xd3 0x36 0x82)
+                                              (java.awt.Color. 0x6c 0x71 0xc4)
+                                              (java.awt.Color. 0x26 0x8b 0xd2)
+                                              (java.awt.Color. 0x2a 0xa1 0x98)
+                                              (java.awt.Color. 0x85 0x99 0x00))
+                                             (mod i 8)))
+                           (.drawLine g nx0 ny nx1 ny)))
+                       ))
+                   (.setStroke g (java.awt.BasicStroke. 2.0))
+                   (.setColor g (java.awt.Color. 0x07 0x36 0x42))
+                   (.drawRoundRect g seq-space seq-space draw-w draw-h 9 9)
+                   )))
+         (.setPreferredSize (java.awt.Dimension. w h))))
+      .pack
+      (.setVisible true))))
+  
