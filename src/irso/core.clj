@@ -387,7 +387,7 @@
 
 (defn draw-seqs [snote-seqs]
   "Draw the sequences in snote-seqs"
-  (let [draw-w 1200
+  (let [draw-w (* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit))))
         seq-w draw-w
         seq-h 50
         seq-space 10
