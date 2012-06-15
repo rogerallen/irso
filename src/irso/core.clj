@@ -359,6 +359,32 @@
    (for [snote-seq snote-seqs]
      (play-seq inst m beat snote-seq))))
 
+;; colors from the solarized theme
+(def base-colors
+  (hash-map
+   :base03    (java.awt.Color. 0x00 0x2b 0x36)
+   :base02    (java.awt.Color. 0x07 0x36 0x42)
+   :base01    (java.awt.Color. 0x58 0x6e 0x75)
+   :base00    (java.awt.Color. 0x65 0x7b 0x83)
+   :base0     (java.awt.Color. 0x83 0x94 0x96)
+   :base1     (java.awt.Color. 0x93 0xa1 0xa1)
+   :base2     (java.awt.Color. 0xee 0xe8 0xd5)
+   :base3     (java.awt.Color. 0xfd 0xf6 0xe3)))
+(def fore-colors
+  (hash-map
+   :yellow    (java.awt.Color. 0xb5 0x89 0x00)
+   :orange    (java.awt.Color. 0xcb 0x4b 0x16)
+   :red       (java.awt.Color. 0xdc 0x32 0x2f)
+   :magenta   (java.awt.Color. 0xd3 0x36 0x82)
+   :violet    (java.awt.Color. 0x6c 0x71 0xc4)
+   :blue      (java.awt.Color. 0x26 0x8b 0xd2)
+   :cyan      (java.awt.Color. 0x2a 0xa1 0x98)
+   :green     (java.awt.Color. 0x85 0x99 0x00)))
+(defn nth-fore-color [i]
+  (let [num-colors (count fore-colors)
+        nth-key (nth (keys fore-colors) (mod i num-colors))]
+    (fore-colors nth-key)))
+
 (defn draw-seqs [snote-seqs]
   "Draw the sequences in snote-seqs"
   (let [draw-w 1200
@@ -375,31 +401,29 @@
       (.setContentPane 
        (doto (proxy [javax.swing.JPanel] []
                (paintComponent [^java.awt.Graphics g]
-                 (let [g (doto ^java.awt.Graphics2D (.create g)
-                               ;;(.scale 1.0 1.0)
-                               ;;(.translate 5.0 5.0)
-                               (.setStroke (java.awt.BasicStroke. 2.0)))
-                       ]
-                   (.setColor g (java.awt.Color. 0x93 0xa1 0xa1))
+                 (let [g (doto ^java.awt.Graphics2D
+                           (.create g)
+                           (.setStroke (java.awt.BasicStroke. 2.0))
+                           (.setRenderingHint
+                            java.awt.RenderingHints/KEY_ANTIALIASING
+                            java.awt.RenderingHints/VALUE_ANTIALIAS_ON))]
+                   ;;(println "draw-seqs")
+                   (.setColor g (:base1 base-colors))
                    (.fillRect g 0 0 w h)
-                   (.setColor g (java.awt.Color. 0x65 0x7b 0x83))
+                   (.setColor g (:base00 base-colors))
                    (.fillRoundRect g seq-space seq-space draw-w draw-h 9 9)
-                   (doseq [[i [cur-min-beat cur-num-beats cur-seq]]
-                           (map-indexed vector
-                                        (map vector
-                                             (map min-beat snote-seqs)
-                                             (map num-beats snote-seqs)
-                                             snote-seqs))]
-                     ;;(println "aaa" i cur-num-beats)
-                     (let [x0 (+ seq-space (* seq-w (/ cur-min-beat max-seq-beats)))
+                   (doseq [[i cur-seq] (map-indexed vector snote-seqs)]
+                     (let [cur-min-beat (min-beat cur-seq)
+                           cur-num-beats (num-beats cur-seq)
+                           x0 (+ seq-space (* seq-w (/ cur-min-beat max-seq-beats)))
                            x1 (* seq-w (/ cur-num-beats max-seq-beats))
                            y0 (+ seq-space (* (+ seq-h seq-space2) i))
                            y1 seq-h]
                        ;;(println i "drawRect" x0 y0 x1 y1)
-                       (.setStroke g (java.awt.BasicStroke. 1.4))
-                       (.setColor g (java.awt.Color. 0xee 0xe8 0xd5))
+                       (.setStroke g (java.awt.BasicStroke. 1.2))
+                       (.setColor g (:base2 base-colors))
                        (.fillRoundRect g x0 y0 x1 y1 9 9)
-                       (.setColor g (java.awt.Color. 0x07 0x36 0x42))
+                       (.setColor g (:base02 base-colors))
                        (.drawRoundRect g x0 y0 x1 y1 9 9)
                        (doseq [snote cur-seq]
                          (let [nx0 (+ seq-space
@@ -409,20 +433,13 @@
                                                   max-seq-beats)))
                                ny (- (+ y0 y1)
                                      (* seq-h (/ (:pitch snote) 127)))]
-                           (.setColor g (nth (list
-                                              (java.awt.Color. 0xb5 0x89 0x00)
-                                              (java.awt.Color. 0xcb 0x4b 0x16)
-                                              (java.awt.Color. 0xdc 0x32 0x2f)
-                                              (java.awt.Color. 0xd3 0x36 0x82)
-                                              (java.awt.Color. 0x6c 0x71 0xc4)
-                                              (java.awt.Color. 0x26 0x8b 0xd2)
-                                              (java.awt.Color. 0x2a 0xa1 0x98)
-                                              (java.awt.Color. 0x85 0x99 0x00))
-                                             (mod i 8)))
+                           ;;(println "drawStroke" nx0 nx1 ny)
+                           (.setStroke g (java.awt.BasicStroke. 1.5))
+                           (.setColor g (nth-fore-color i))
                            (.drawLine g nx0 ny nx1 ny)))
                        ))
                    (.setStroke g (java.awt.BasicStroke. 2.0))
-                   (.setColor g (java.awt.Color. 0x07 0x36 0x42))
+                   (.setColor g (:base02 base-colors))
                    (.drawRoundRect g seq-space seq-space draw-w draw-h 9 9)
                    )))
          (.setPreferredSize (java.awt.Dimension. w h))))
