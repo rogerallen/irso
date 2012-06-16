@@ -385,7 +385,7 @@
         nth-key (nth (keys fore-colors) (mod i num-colors))]
     (fore-colors nth-key)))
 
-(defn draw-seqs [snote-seqs]
+(defn draw-seqs [snote-seqs window-name]
   "Draw the sequences in snote-seqs"
   (let [draw-w (* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit))))
         seq-w draw-w
@@ -397,7 +397,7 @@
         h (+ (* 2 seq-space) draw-h)
         max-seq-beats (reduce max (map max-beat snote-seqs))
         ]
-    (doto (javax.swing.JFrame. "draw-seqs")
+    (doto (javax.swing.JFrame. window-name)
       (.setContentPane 
        (doto (proxy [javax.swing.JPanel] []
                (paintComponent [^java.awt.Graphics g]

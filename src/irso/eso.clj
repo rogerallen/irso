@@ -56,7 +56,7 @@
 
 (defn ^:dynamic eso [m beat tonic type]
   (let [seq-list (calc-eso beat tonic type)]
-    (draw-seqs seq-list)
+    (draw-seqs seq-list "E Song")
     (play-seqs sampled-piano m beat seq-list)))
 
 ;; ======================================================================

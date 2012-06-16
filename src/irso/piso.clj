@@ -59,7 +59,7 @@
 
 (defn ^:dynamic piso [m beat tonic type]
   (let [seq-list (calc-piso beat tonic type)]
-    (draw-seqs seq-list)
+    (draw-seqs seq-list "Pi Song")
     (play-seqs sampled-piano m beat seq-list)))
 
 ;; ======================================================================
