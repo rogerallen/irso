@@ -6,4 +6,5 @@
                   ]
   :plugins [ [lein-swank "1.4.4"] ]
   :main irso.core
+  :run-aliases {:eso irso.core/main-play-eso}
   )

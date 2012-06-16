@@ -1,13 +1,15 @@
 (ns irso.eso
-  (:use [irso.core])
-  (:use [overtone.core])
-  (:use [overtone.inst.sampled-piano])) ;; requires 0.7.0. downloads 200MB
+  (:use [irso.irso]))
+;;  (:refer (irso.core)))
+;;  (:use [irso.core])
+;;  (:use [overtone.core])
+;;  (:use [overtone.inst.sampled-piano])) ;; requires 0.7.0. downloads 200MB
 
 ;; ======================================================================
 ;; the song
-(defn ^:dynamic calc-eso [beat tonic type]
-  (let [irno-seq e-1000
-        foo (println "e song")
+(defn calc-eso [beat tonic type]
+  (let [foo (println "e song")
+        irno-seq e-1000
         seq1 (calc-seq tonic type 13 irno-seq)
         seq2 (calc-seq tonic type 17 (drop (count seq1) irno-seq))
         seq3 (calc-seq tonic type 19 (drop (+ (count seq1)
@@ -54,20 +56,9 @@
           theme-seq3r
           concl-seq)))
 
-(defn ^:dynamic eso [m beat tonic type]
-  (let [seq-list (calc-eso beat tonic type)]
-    (draw-seqs seq-list "E Song")
-    (play-seqs sampled-piano m beat seq-list)))
-
 ;; ======================================================================
 ;; Add effects to create the proper mood
 
 ;; TBD
 
-;; ======================================================================
-;; and play...
-(defn play-eso [] 
-  (let [metro (metronome 80)]
-    (eso metro (metro) :c3 :pentatonic)
-    metro))
 
