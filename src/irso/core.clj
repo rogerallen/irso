@@ -41,49 +41,38 @@
 )
   
 ;; ======================================================================
-(defn main-play-eso []
-  (let [foo (prn "Starting...")
+(defn main-play-song [calc-fn tempo tonic scale-type instrument title]
+  (let [foo (prn "Playing" title)
         ;;foo (connect-external-server 57110)
-        m (metronome 80)
-        foo (prn "Calculating...")
-        seq-list (calc-eso (m) :c3 :pentatonic)
+        m (metronome tempo)
+        ;;foo (prn "Calculating...")
+        seq-list (calc-fn (m) tonic scale-type)
+        ;;foo (prn "Drawing...")
+        the-frame (draw-seqs seq-list title)
+        ;;foo (prn "Playing...")
+        final-beat (play-seqs instrument m (m) seq-list)
         ]
-    (prn "Drawing...")
-    (draw-seqs seq-list "E Song")
-    (prn "Playing...")
-    (play-seqs sampled-piano m (m) seq-list)
-    (prn "Done?")
-    ))
+    (doseq [cur-beat (repeatedly m)]
+      ;;(prn final-beat cur-beat)
+      (if (> cur-beat (+ 10 final-beat))
+        (do
+          (prn "Done.")
+          (System/exit 0)))
+      ;;(prn "Sleeping...")
+      (Thread/sleep 2000))))
+
+(defn main-play-eso []
+  (main-play-song calc-eso 80 :c3 :pentatonic sampled-piano "E Song"))
 
 (defn main-play-piso []
-  (let [m (metronome 80)
-        seq-list (calc-piso (m) :c3 :pentatonic)
-        ]
-    (draw-seqs seq-list "Pi Song")
-    (play-seqs sampled-piano m (m) seq-list)
-    ))
+  (main-play-song calc-piso 80 :c3 :pentatonic sampled-piano "Pi Song"))
 
 (defn main-play-sqrt2so []
-  (let [m (metronome 80)
-        seq-list (calc-sqrt2so (m) :c3 :pentatonic)
-        ]
-    (draw-seqs seq-list "Sqrt2 Song")
-    (play-seqs sampled-piano m (m) seq-list)
-    ))
+  (main-play-song calc-sqrt2so 80 :c3 :pentatonic sampled-piano "Sqrt2 Song"))
 
 (defn main-play-sqrt3so []
-  (let [m (metronome 80)
-        seq-list (calc-sqrt3so (m) :c3 :pentatonic)
-        ]
-    (draw-seqs seq-list "Sqrt3 Song")
-    (play-seqs sampled-piano m (m) seq-list)
-    ))
+  (main-play-song calc-sqrt3so 80 :c3 :pentatonic sampled-piano "Sqrt3 Song"))
 
 (defn main-play-tauso []
-  (let [m (metronome 80)
-        seq-list (calc-tauso (m) :c3 :pentatonic)
-        ]
-    (draw-seqs seq-list "Tau Song")
-    (play-seqs sampled-piano m (m) seq-list)
-    ))
+  (main-play-song calc-tauso 80 :c3 :pentatonic sampled-piano "Tau Song"))
 

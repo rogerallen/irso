@@ -227,6 +227,11 @@
   (assoc nxt-snote
     :beat (+ (:duration cur-snote) (:beat cur-snote) (:beat nxt-snote))))
 
+;; ======================================================================
+;; music sequence code.  ??? Should we use a different name than 'seq'
+;; since that also aliases with the clojure concept?
+
+;; FIXME better name
 (defn only-rest-beats
   "given a snote-seq, zero out all the beats that are contiguous and
   can be calculated via :duration, leaving only the beats that
@@ -280,6 +285,7 @@
       (assoc n :duration (- num-beats (:beat n)))
       n)))
 
+;; FIXME -- better name
 (defn ^:dynamic calc-seq-irno-repeat
   "given snote-seq and a count of play/rest pairs, find play/rest
   counts from irno-seq.  Calc play/rest seq & return new snote-seq."
@@ -325,6 +331,9 @@
   (last
    (for [snote-seq snote-seqs]
      (play-seq inst m in-beat snote-seq))))
+
+;; ======================================================================
+;; code for displaying sequences
 
 ;; colors from the solarized theme
 (def base-colors

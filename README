@@ -13,9 +13,12 @@ We'll see where this goes.
 
 ## Usage
 
-At some point lein run will create live music or mp3 audio that you
-can take with you.  Right now, if you are interested you should browse
-the source and play at the repl.
+To play a song, use lein run <song> to listen to the song.  This will
+also display a window with an overview of the song's sequences.
+<song> is one of :eso, :piso, :sqrt2so, :sqrt3so or :tauso.
+
+Still, if you are interested you should browse the source and play at
+the repl.
 
 ## Building LOCALSNAPSHOT overtone
 
