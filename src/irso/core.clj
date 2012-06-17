@@ -2,7 +2,11 @@
   (:use [overtone.live]
         [overtone.inst.sampled-piano]
         [irso.irso]
-        [irso.eso])
+        [irso.eso]
+        [irso.piso]
+        [irso.sqrt2so]
+        [irso.sqrt3so]
+        [irso.tauso])
   )
 ;; paste these into the repl (not C-x C-e)
 #_(
@@ -38,7 +42,7 @@
   
 ;; ======================================================================
 (defn main-play-eso []
-  (let [foo (prn "Connecting...")
+  (let [foo (prn "Starting...")
         ;;foo (connect-external-server 57110)
         m (metronome 80)
         foo (prn "Calculating...")
@@ -50,3 +54,36 @@
     (play-seqs sampled-piano m (m) seq-list)
     (prn "Done?")
     ))
+
+(defn main-play-piso []
+  (let [m (metronome 80)
+        seq-list (calc-piso (m) :c3 :pentatonic)
+        ]
+    (draw-seqs seq-list "Pi Song")
+    (play-seqs sampled-piano m (m) seq-list)
+    ))
+
+(defn main-play-sqrt2so []
+  (let [m (metronome 80)
+        seq-list (calc-sqrt2so (m) :c3 :pentatonic)
+        ]
+    (draw-seqs seq-list "Sqrt2 Song")
+    (play-seqs sampled-piano m (m) seq-list)
+    ))
+
+(defn main-play-sqrt3so []
+  (let [m (metronome 80)
+        seq-list (calc-sqrt3so (m) :c3 :pentatonic)
+        ]
+    (draw-seqs seq-list "Sqrt3 Song")
+    (play-seqs sampled-piano m (m) seq-list)
+    ))
+
+(defn main-play-tauso []
+  (let [m (metronome 80)
+        seq-list (calc-tauso (m) :c3 :pentatonic)
+        ]
+    (draw-seqs seq-list "Tau Song")
+    (play-seqs sampled-piano m (m) seq-list)
+    ))
+

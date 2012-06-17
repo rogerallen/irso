@@ -1,9 +1,5 @@
 (ns irso.piso
-  (:use [irso.core])
-  (:use [overtone.core])
-  (:use [overtone.inst.sampled-piano])) ;; requires 0.7.0. downloads 200MB
-
-;;(use 'irso.core)
+  (:use [irso.irso]))
 
 ;; ======================================================================
 ;; the song
@@ -57,11 +53,6 @@
           theme-seq3r
           concl-seq)))
 
-(defn ^:dynamic piso [m beat tonic type]
-  (let [seq-list (calc-piso beat tonic type)]
-    (draw-seqs seq-list "Pi Song")
-    (play-seqs sampled-piano m beat seq-list)))
-
 ;; ======================================================================
 ;; Add effects to create the proper mood
 #_(do 
@@ -86,18 +77,4 @@
   )
 ;; should also try 'panning' the cutoff frequencies, etc. during music
 ;;(clear-fx sampled-piano)
-
-;; ======================================================================
-;; and play...
-(defn play-piso [] 
-  (let [metro (metronome 80)]
-    (piso metro (metro) :c3 :pentatonic)
-    metro))
-;; (play-piso)
-;; (stop)
-
-;; debugging
-;; for ^:dynamic, see http://stackoverflow.com/questions/8875353/why-im-getting-cant-dynamically-bind-non-dynamic-var
-;; (use 'clojure.tools.trace)
-;; (dotrace [piso play-repeated-snote-seq] (piso metro (metro) :c3 :pentatonic))
 

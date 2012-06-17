@@ -1,9 +1,5 @@
 (ns irso.sqrt2so
-  (:use [irso.core])
-  (:use [overtone.core])
-  (:use [overtone.inst.sampled-piano])) ;; requires 0.7.0. downloads 200MB
-
-;;(use 'irso.core)
+  (:use [irso.irso]))
 
 ;; ======================================================================
 ;; the song
@@ -57,22 +53,4 @@
           theme-seq3r
           concl-seq)))
 
-(defn ^:dynamic sqrt2so [m beat tonic type]
-  (let [seq-list (calc-sqrt2so beat tonic type)]
-    (draw-seqs seq-list "Sqrt2 Song")
-    (play-seqs sampled-piano m beat seq-list)))
-
-;; ======================================================================
-;; Add effects to create the proper mood
-
-;; TBD
-
-;; ======================================================================
-;; and play...
-(defn play-sqrt2so [] 
-  (let [metro (metronome 80)]
-    (sqrt2so metro (metro) :c3 :pentatonic)
-    metro))
-;; (play-sqrt2so)
-;; (stop)
 
