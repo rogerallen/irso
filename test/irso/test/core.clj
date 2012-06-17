@@ -1,5 +1,5 @@
 (ns irso.test.core
-  (:use [irso.core])
+  (:use [irso.irso])
   (:use [clojure.test]))
 
 (deftest test-calc-seq
