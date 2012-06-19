@@ -11,24 +11,10 @@
 ;; paste these into the repl (not C-x C-e)
 #_(
    (use 'irso.core)
-   (use 'overtone.core)
-   (connect-external-server 57110)
-
-   (use 'irso.eso)
-   (def m (play-eso))
-   ;;then use (m) to see what the current beat is
-
-   (use 'irso.piso)
-   (def m (play-piso))
-
-   (use 'irso.sqrt2so)
-   (def m (play-sqrt2so))
-
-   (use 'irso.sqrt3so)
-   (def m (play-sqrt3so))
-
-   (use 'irso.tauso)
-   (def m (play-tauso))
+   (use 'irso.irso)
+   
+   ;;(use 'overtone.core)
+   ;;(connect-external-server 57110)
 
    (use :reload-all 'irso.test.core)
    (test-calc-seq)
@@ -57,9 +43,10 @@
       (if (> cur-beat (+ 10 final-beat))
         (do
           (prn "Done.")
-          (System/exit 0)))
+          (System/exit 0))) ;; FIXME -- is this really necessary?
+      ;;(draw-seqs-update seq-list (m)) ;; YUCK!  slideshow
       ;;(prn "Sleeping...")
-      (Thread/sleep 2000))))
+      (Thread/sleep 1000))))
 
 (defn main-play-eso []
   (main-play-song calc-eso 80 :c3 :pentatonic sampled-piano "E Song"))

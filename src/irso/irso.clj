@@ -361,10 +361,70 @@
         nth-key (nth (keys fore-colors) (mod i num-colors))]
     (fore-colors nth-key)))
 
-(defn draw-seqs [snote-seqs window-name]
-  "Draw the sequences in snote-seqs"
-  (let [draw-w (* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit))))
+;; FIXME -- not sure I like duplicating all this work in the let
+;; statement, but I like the idea of passing it in even less.  Global
+;; config map Object?
+
+;; FIXME -- tried this, but got horrible 'slideshow' animation.  Yuck
+;; (def THE-WINDOW (ref {:g nil}))
+(defn draw-seqs-update [g snote-seqs cur-beat]
+  (let [;;g (:g @THE-WINDOW)
+        draw-w (* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit))))
         seq-w draw-w
+        seq-h 50
+        seq-space 10
+        seq-space2 4
+        draw-h (- (* (+ seq-h seq-space2) (count snote-seqs)) seq-space2)
+        w (+ (* 2 seq-space) draw-w)
+        h (+ (* 2 seq-space) draw-h)
+        max-seq-beats (reduce max (map max-beat snote-seqs))
+        ]
+    ;;(println "draw-seqs-update" g)
+    (.setColor g (:base1 base-colors))
+    (.fillRect g 0 0 w h)
+    (.setColor g (:base00 base-colors))
+    (.fillRoundRect g seq-space seq-space draw-w draw-h 9 9)
+    (doseq [[i cur-seq] (map-indexed vector snote-seqs)]
+      (let [cur-min-beat (min-beat cur-seq)
+            cur-num-beats (num-beats cur-seq)
+            x0 (+ seq-space (* seq-w (/ cur-min-beat max-seq-beats)))
+            x1 (* seq-w (/ cur-num-beats max-seq-beats))
+            y0 (+ seq-space (* (+ seq-h seq-space2) i))
+            y1 seq-h]
+        ;;(println i "drawRect" x0 y0 x1 y1)
+        (.setStroke g (java.awt.BasicStroke. 1.2))
+        (.setColor g (:base2 base-colors))
+        (.fillRoundRect g x0 y0 x1 y1 9 9)
+        (.setColor g (:base02 base-colors))
+        (.drawRoundRect g x0 y0 x1 y1 9 9)
+        (doseq [snote cur-seq]
+          (let [nx0 (+ seq-space
+                       (* seq-w (/ (:beat snote) max-seq-beats)))
+                nx1 (+ seq-space
+                       (* seq-w (/ (+ (:beat snote) (:duration snote))
+                                   max-seq-beats)))
+                ny (- (+ y0 y1)
+                      (* seq-h (/ (:pitch snote) 127)))]
+            ;;(println "drawStroke" nx0 nx1 ny)
+            (.setStroke g (java.awt.BasicStroke. 1.5))
+            (.setColor g (nth-fore-color i))
+            (.drawLine g nx0 ny nx1 ny)))
+        ))
+    ;; draw line for metronome (not really hooked up yet)
+    (if (> cur-beat 0)
+      (let [bx (+ seq-space (* seq-w (/ cur-beat max-seq-beats)))]
+        (.setStroke g (java.awt.BasicStroke. 1.0))
+        (.setColor g (:red fore-colors))
+        (.drawLine g bx 0 bx h)))
+    ;; draw top rect
+    (.setStroke g (java.awt.BasicStroke. 2.0))
+    (.setColor g (:base02 base-colors))
+    (.drawRoundRect g seq-space seq-space draw-w draw-h 9 9)))  
+
+(defn draw-seqs [snote-seqs window-name]
+  "Draw the sequences in snote-seqs.  return the gfx component to allow future updates"
+  (let [draw-w (* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit))))
+        ;;seq-w draw-w
         seq-h 50
         seq-space 10
         seq-space2 4
@@ -383,40 +443,8 @@
                            (.setRenderingHint
                             java.awt.RenderingHints/KEY_ANTIALIASING
                             java.awt.RenderingHints/VALUE_ANTIALIAS_ON))]
-                   ;;(println "draw-seqs")
-                   (.setColor g (:base1 base-colors))
-                   (.fillRect g 0 0 w h)
-                   (.setColor g (:base00 base-colors))
-                   (.fillRoundRect g seq-space seq-space draw-w draw-h 9 9)
-                   (doseq [[i cur-seq] (map-indexed vector snote-seqs)]
-                     (let [cur-min-beat (min-beat cur-seq)
-                           cur-num-beats (num-beats cur-seq)
-                           x0 (+ seq-space (* seq-w (/ cur-min-beat max-seq-beats)))
-                           x1 (* seq-w (/ cur-num-beats max-seq-beats))
-                           y0 (+ seq-space (* (+ seq-h seq-space2) i))
-                           y1 seq-h]
-                       ;;(println i "drawRect" x0 y0 x1 y1)
-                       (.setStroke g (java.awt.BasicStroke. 1.2))
-                       (.setColor g (:base2 base-colors))
-                       (.fillRoundRect g x0 y0 x1 y1 9 9)
-                       (.setColor g (:base02 base-colors))
-                       (.drawRoundRect g x0 y0 x1 y1 9 9)
-                       (doseq [snote cur-seq]
-                         (let [nx0 (+ seq-space
-                                      (* seq-w (/ (:beat snote) max-seq-beats)))
-                               nx1 (+ seq-space
-                                      (* seq-w (/ (+ (:beat snote) (:duration snote))
-                                                  max-seq-beats)))
-                               ny (- (+ y0 y1)
-                                     (* seq-h (/ (:pitch snote) 127)))]
-                           ;;(println "drawStroke" nx0 nx1 ny)
-                           (.setStroke g (java.awt.BasicStroke. 1.5))
-                           (.setColor g (nth-fore-color i))
-                           (.drawLine g nx0 ny nx1 ny)))
-                       ))
-                   (.setStroke g (java.awt.BasicStroke. 2.0))
-                   (.setColor g (:base02 base-colors))
-                   (.drawRoundRect g seq-space seq-space draw-w draw-h 9 9)
+                   ;;(dosync (alter THE-WINDOW assoc :g g))
+                   (draw-seqs-update g snote-seqs -1)
                    )))
          (.setPreferredSize (java.awt.Dimension. w h))))
       .pack
