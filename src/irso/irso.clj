@@ -317,12 +317,11 @@
              cur-level (velocity2level (:velocity cur-snote))
              cur-dur (:duration cur-snote)
              cur-beat (+ in-beat (:beat cur-snote))
-             k-beat 1.6]
-         ;; FIXME (def pk ...) is not local to this routine.  
-         (at (m cur-beat) (def pk (inst :note cur-pitch
-                                        :level cur-level
-                                        :attack cur-attack)))
-         (at (m (+ cur-beat (* k-beat cur-dur))) (ctl pk :gate 0))
+             k-beat 1.6
+             cur-inst (at (m cur-beat) (inst :note cur-pitch
+                                             :level cur-level
+                                             :attack cur-attack))]
+         (at (m (+ cur-beat (* k-beat cur-dur))) (ctl cur-inst :gate 0))
          (+ cur-beat cur-dur))))))
   
 (defn play-seqs
