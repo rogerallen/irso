@@ -27,6 +27,16 @@
 )
   
 ;; ======================================================================
+(defn play-song [calc-fn tempo tonic scale-type instrument title]
+  (let [foo (prn "Playing" title)
+        m (metronome tempo)
+        seq-list (calc-fn (m) tonic scale-type)
+        the-frame (draw-seqs seq-list m title)
+        final-beat (play-seqs instrument m (m) seq-list)
+        ]
+    m))
+
+;; ======================================================================
 (defn main-play-song [calc-fn tempo tonic scale-type instrument title]
   (let [foo (prn "Playing" title)
         ;;foo (connect-external-server 57110)
@@ -34,7 +44,7 @@
         ;;foo (prn "Calculating...")
         seq-list (calc-fn (m) tonic scale-type)
         ;;foo (prn "Drawing...")
-        the-frame (draw-seqs seq-list title)
+        the-frame (draw-seqs seq-list m title)
         ;;foo (prn "Playing...")
         final-beat (play-seqs instrument m (m) seq-list)
         ]

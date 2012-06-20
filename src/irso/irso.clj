@@ -1,6 +1,7 @@
 (ns irso.irso
   (:use [overtone.live]
         [overtone.inst.sampled-piano])
+  (:require [quil.core])
   )
 
 ;; a variety of irrational numbers to 1000 digits...
@@ -337,52 +338,55 @@
 ;; colors from the solarized theme
 (def base-colors
   (hash-map
-   :base03    (java.awt.Color. 0x00 0x2b 0x36)
-   :base02    (java.awt.Color. 0x07 0x36 0x42)
-   :base01    (java.awt.Color. 0x58 0x6e 0x75)
-   :base00    (java.awt.Color. 0x65 0x7b 0x83)
-   :base0     (java.awt.Color. 0x83 0x94 0x96)
-   :base1     (java.awt.Color. 0x93 0xa1 0xa1)
-   :base2     (java.awt.Color. 0xee 0xe8 0xd5)
-   :base3     (java.awt.Color. 0xfd 0xf6 0xe3)))
+   :base03    '(0x00 0x2b 0x36)
+   :base02    '(0x07 0x36 0x42)
+   :base01    '(0x58 0x6e 0x75)
+   :base00    '(0x65 0x7b 0x83)
+   :base0     '(0x83 0x94 0x96)
+   :base1     '(0x93 0xa1 0xa1)
+   :base2     '(0xee 0xe8 0xd5)
+   :base3     '(0xfd 0xf6 0xe3)))
 (def fore-colors
   (hash-map
-   :yellow    (java.awt.Color. 0xb5 0x89 0x00)
-   :orange    (java.awt.Color. 0xcb 0x4b 0x16)
-   :red       (java.awt.Color. 0xdc 0x32 0x2f)
-   :magenta   (java.awt.Color. 0xd3 0x36 0x82)
-   :violet    (java.awt.Color. 0x6c 0x71 0xc4)
-   :blue      (java.awt.Color. 0x26 0x8b 0xd2)
-   :cyan      (java.awt.Color. 0x2a 0xa1 0x98)
-   :green     (java.awt.Color. 0x85 0x99 0x00)))
+   :yellow    '(0xb5 0x89 0x00)
+   :orange    '(0xcb 0x4b 0x16)
+   :red       '(0xdc 0x32 0x2f)
+   :magenta   '(0xd3 0x36 0x82)
+   :violet    '(0x6c 0x71 0xc4)
+   :blue      '(0x26 0x8b 0xd2)
+   :cyan      '(0x2a 0xa1 0x98)
+   :green     '(0x85 0x99 0x00)))
 (defn nth-fore-color [i]
   (let [num-colors (count fore-colors)
         nth-key (nth (keys fore-colors) (mod i num-colors))]
     (fore-colors nth-key)))
 
-;; FIXME -- not sure I like duplicating all this work in the let
-;; statement, but I like the idea of passing it in even less.  Global
-;; config map Object?
+;; quil ftw!
+(defn window-setup []
+  (quil.core/smooth)
+  (quil.core/frame-rate 10)
+  (apply quil.core/background (:base1 base-colors)))
 
-;; FIXME -- tried this, but got horrible 'slideshow' animation.  Yuck
-;; (def THE-WINDOW (ref {:g nil}))
-(defn draw-seqs-update [g snote-seqs cur-beat]
-  (let [;;g (:g @THE-WINDOW)
-        draw-w (* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit))))
-        seq-w draw-w
-        seq-h 50
-        seq-space 10
+(defn window-draw [snote-seqs the-metronome]
+  (let [seq-space 10
         seq-space2 4
+        w (quil.core/width)
+        draw-w (- w (* 2 seq-space))
+        seq-w draw-w ;; FIXME?
+        seq-h 50
         draw-h (- (* (+ seq-h seq-space2) (count snote-seqs)) seq-space2)
-        w (+ (* 2 seq-space) draw-w)
         h (+ (* 2 seq-space) draw-h)
         max-seq-beats (reduce max (map max-beat snote-seqs))
+        cur-beat (/ (- (now) (start the-metronome)) (tick the-metronome))
         ]
-    ;;(println "draw-seqs-update" g)
-    (.setColor g (:base1 base-colors))
-    (.fillRect g 0 0 w h)
-    (.setColor g (:base00 base-colors))
-    (.fillRoundRect g seq-space seq-space draw-w draw-h 9 9)
+    ;; background
+    (apply quil.core/fill (:base1 base-colors))
+    (quil.core/no-stroke)
+    (quil.core/rect 0 0 w h)
+    ;; drawing area background
+    (apply quil.core/fill (:base00 base-colors))
+    (quil.core/rect seq-space seq-space draw-w draw-h)  ;; FIXME round-rect
+    ;; draw the sequences...
     (doseq [[i cur-seq] (map-indexed vector snote-seqs)]
       (let [cur-min-beat (min-beat cur-seq)
             cur-num-beats (num-beats cur-seq)
@@ -391,11 +395,11 @@
             y0 (+ seq-space (* (+ seq-h seq-space2) i))
             y1 seq-h]
         ;;(println i "drawRect" x0 y0 x1 y1)
-        (.setStroke g (java.awt.BasicStroke. 1.2))
-        (.setColor g (:base2 base-colors))
-        (.fillRoundRect g x0 y0 x1 y1 9 9)
-        (.setColor g (:base02 base-colors))
-        (.drawRoundRect g x0 y0 x1 y1 9 9)
+        (quil.core/stroke-weight 1.2)
+        (apply quil.core/fill (:base2 base-colors)) 
+        (apply quil.core/stroke (:base02 base-colors))
+        (quil.core/rect x0 y0 x1 y1)
+        ;; draw the notes...
         (doseq [snote cur-seq]
           (let [nx0 (+ seq-space
                        (* seq-w (/ (:beat snote) max-seq-beats)))
@@ -405,47 +409,34 @@
                 ny (- (+ y0 y1)
                       (* seq-h (/ (:pitch snote) 127)))]
             ;;(println "drawStroke" nx0 nx1 ny)
-            (.setStroke g (java.awt.BasicStroke. 1.5))
-            (.setColor g (nth-fore-color i))
-            (.drawLine g nx0 ny nx1 ny)))
+            (if (and (>= cur-beat (:beat snote)) (<= cur-beat (+ (:beat snote) (:duration snote))))
+              (do (quil.core/stroke-weight 3.0)
+                  (apply quil.core/stroke (:base00 base-colors)))
+              (do
+                (quil.core/stroke-weight 1.5)
+                (apply quil.core/stroke (nth-fore-color i))))
+            (quil.core/line nx0 ny nx1 ny)))
         ))
-    ;; draw line for metronome (not really hooked up yet)
-    (if (> cur-beat 0)
+    ;; draw line for metronome
+    (if (and (>= cur-beat 0) (<= cur-beat max-seq-beats))
       (let [bx (+ seq-space (* seq-w (/ cur-beat max-seq-beats)))]
-        (.setStroke g (java.awt.BasicStroke. 1.0))
-        (.setColor g (:red fore-colors))
-        (.drawLine g bx 0 bx h)))
-    ;; draw top rect
-    (.setStroke g (java.awt.BasicStroke. 2.0))
-    (.setColor g (:base02 base-colors))
-    (.drawRoundRect g seq-space seq-space draw-w draw-h 9 9)))  
+        (quil.core/stroke-weight 2.0)
+        (apply quil.core/stroke (:base03 base-colors))
+        (quil.core/line bx seq-space bx (+ seq-space draw-h))))
+    ;; draw top rect outline
+    (quil.core/stroke-weight 2.0)
+    (quil.core/no-fill)
+    (apply quil.core/stroke (:base02 base-colors))
+    (quil.core/rect seq-space seq-space draw-w draw-h)))
 
-(defn draw-seqs [snote-seqs window-name]
-  "Draw the sequences in snote-seqs.  return the gfx component to allow future updates"
-  (let [draw-w (* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit))))
-        ;;seq-w draw-w
-        seq-h 50
+(defn draw-seqs [snote-seqs the-metronome window-name]
+  (let [seq-h 50
         seq-space 10
         seq-space2 4
         draw-h (- (* (+ seq-h seq-space2) (count snote-seqs)) seq-space2)
-        w (+ (* 2 seq-space) draw-w)
-        h (+ (* 2 seq-space) draw-h)
-        max-seq-beats (reduce max (map max-beat snote-seqs))
-        ]
-    (doto (javax.swing.JFrame. window-name)
-      (.setContentPane 
-       (doto (proxy [javax.swing.JPanel] []
-               (paintComponent [^java.awt.Graphics g]
-                 (let [g (doto ^java.awt.Graphics2D
-                           (.create g)
-                           (.setStroke (java.awt.BasicStroke. 2.0))
-                           (.setRenderingHint
-                            java.awt.RenderingHints/KEY_ANTIALIASING
-                            java.awt.RenderingHints/VALUE_ANTIALIAS_ON))]
-                   ;;(dosync (alter THE-WINDOW assoc :g g))
-                   (draw-seqs-update g snote-seqs -1)
-                   )))
-         (.setPreferredSize (java.awt.Dimension. w h))))
-      .pack
-      (.setVisible true))))
-  
+        h (+ (* 2 seq-space) draw-h)]
+    (quil.core/defsketch window-sketch
+      :title "window-name" ;; FIXME
+      :setup window-setup
+      :draw (partial window-draw snote-seqs the-metronome)
+      :size [(* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit)))) h])))
