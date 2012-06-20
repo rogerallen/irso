@@ -31,8 +31,8 @@
   (let [foo (prn "Playing" title)
         m (metronome tempo)
         seq-list (calc-fn (m) tonic scale-type)
-        the-frame (draw-seqs seq-list m title)
-        final-beat (play-seqs instrument m (m) seq-list)
+        final-beat (play-seqs instrument m 10 seq-list)
+        the-frame (draw-seqs seq-list m 10 title)
         ]
     m))
 
@@ -41,12 +41,10 @@
   (let [foo (prn "Playing" title)
         ;;foo (connect-external-server 57110)
         m (metronome tempo)
-        ;;foo (prn "Calculating...")
         seq-list (calc-fn (m) tonic scale-type)
-        ;;foo (prn "Drawing...")
-        the-frame (draw-seqs seq-list m title)
-        ;;foo (prn "Playing...")
-        final-beat (play-seqs instrument m (m) seq-list)
+        ;; play seq in 10 beats to give some time for window to come up
+        final-beat (play-seqs instrument m 10 seq-list)
+        the-frame (draw-seqs seq-list m 10 title)
         ]
     (doseq [cur-beat (repeatedly m)]
       ;;(prn final-beat cur-beat)

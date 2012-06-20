@@ -364,10 +364,10 @@
 ;; quil ftw!
 (defn window-setup []
   (quil.core/smooth)
-  (quil.core/frame-rate 10)
+  (quil.core/frame-rate 30) ;; 60 made for a hot laptop...
   (apply quil.core/background (:base1 base-colors)))
 
-(defn window-draw [snote-seqs the-metronome]
+(defn window-draw [snote-seqs the-metronome offset-beat] ;; offset to give time for window to popup
   (let [seq-space 10
         seq-space2 4
         w (quil.core/width)
@@ -377,7 +377,7 @@
         draw-h (- (* (+ seq-h seq-space2) (count snote-seqs)) seq-space2)
         h (+ (* 2 seq-space) draw-h)
         max-seq-beats (reduce max (map max-beat snote-seqs))
-        cur-beat (/ (- (now) (start the-metronome)) (tick the-metronome))
+        cur-beat (- (/ (- (now) (start the-metronome)) (tick the-metronome)) offset-beat)
         ]
     ;; background
     (apply quil.core/fill (:base1 base-colors))
@@ -429,7 +429,7 @@
     (apply quil.core/stroke (:base02 base-colors))
     (quil.core/rect seq-space seq-space draw-w draw-h)))
 
-(defn draw-seqs [snote-seqs the-metronome window-name]
+(defn draw-seqs [snote-seqs the-metronome offset-beat window-name]
   (let [seq-h 50
         seq-space 10
         seq-space2 4
@@ -438,5 +438,5 @@
     (quil.core/defsketch window-sketch
       :title "window-name" ;; FIXME
       :setup window-setup
-      :draw (partial window-draw snote-seqs the-metronome)
+      :draw (partial window-draw snote-seqs the-metronome offset-beat)
       :size [(* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit)))) h])))
