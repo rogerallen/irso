@@ -7,10 +7,15 @@
                   ]
   :plugins [ [lein-swank "1.4.4"] ]
   :main irso.core
-  :run-aliases {:eso     irso.core/main-play-eso
-                :piso    irso.core/main-play-piso
-                :sqrt2so irso.core/main-play-sqrt2so
-                :sqrt3so irso.core/main-play-sqrt3so
-                :tauso   irso.core/main-play-tauso
+  :run-aliases {:eso         irso.core/main-play-eso
+                :piso        irso.core/main-play-piso
+                :sqrt2so     irso.core/main-play-sqrt2so
+                :sqrt3so     irso.core/main-play-sqrt3so
+                :tauso       irso.core/main-play-tauso
+                :rec-eso     irso.core/main-record-eso
+                :rec-piso    irso.core/main-record-piso
+                :rec-sqrt2so irso.core/main-record-sqrt2so
+                :rec-sqrt3so irso.core/main-record-sqrt3so
+                :rec-tauso   irso.core/main-record-tauso
                 }
   )
