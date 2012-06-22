@@ -3,6 +3,7 @@
         [overtone.inst.sampled-piano]
         [irso.irso]
         [irso.eso]
+        [irso.phiso]
         [irso.piso]
         [irso.sqrt2so]
         [irso.sqrt3so]
@@ -59,6 +60,9 @@
 (defn play-eso []
   (play-song-and-wait calc-eso 80 :c3 :pentatonic sampled-piano "E Song"))
 
+(defn play-phiso []
+  (play-song-and-wait calc-phiso 80 :c3 :pentatonic sampled-piano "Phi Song"))
+
 (defn play-piso []
   (play-song-and-wait calc-piso 80 :c3 :pentatonic sampled-piano "Pi Song"))
 
@@ -75,6 +79,10 @@
 (defn main-play-eso []
   (play-eso)
   (System/exit 0))  ;; FIXME -- is this really necessary?
+
+(defn main-play-phiso []
+  (play-phiso)
+  (System/exit 0))
 
 (defn main-play-piso []
   (play-piso)
@@ -98,6 +106,14 @@
     (println "recording to" filename)
     (recording-start filename)
     (play-eso)
+    (recording-stop)
+    (System/exit 0)))
+
+(defn main-record-phiso []
+  (let [filename (time-stamp-wav "~/phiso")]
+    (println "recording to" filename)
+    (recording-start filename)
+    (play-phiso)
     (recording-stop)
     (System/exit 0)))
 
