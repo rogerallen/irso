@@ -471,3 +471,9 @@
       :setup window-setup
       :draw (partial window-draw snote-seqs the-metronome offset-beat)
       :size [(* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit)))) h])))
+
+;; ======================================================================
+;; fx-functions
+(defn setup-irso-fx [inst]
+  (clear-fx inst)
+  (def fx1 (inst-fx sampled-piano fx-reverb)))

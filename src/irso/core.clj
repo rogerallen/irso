@@ -9,7 +9,98 @@
         [irso.sqrt3so]
         [irso.tauso])
   )
-;; paste these into the repl (not C-x C-e)
+  
+;; ======================================================================
+(defn play-song [calc-fn fx-fn tempo tonic scale-type instrument title]
+  (let [m (metronome tempo)
+        seq-list (calc-fn (m) tonic scale-type)
+        foo (fx-fn instrument)
+        ;; play seq some beats after startup to give some time for window to come up
+        final-beat (play-seqs instrument m 8 seq-list)
+        the-frame (draw-seqs seq-list m 8 title)
+        ]
+    {:metronome m
+     :last-beat final-beat
+     :window-frame the-frame}))
+
+(defn play-song-and-wait [calc-fn fx-fn tempo tonic scale-type instrument title]
+  (let [foo (println "Playing...")
+        {m :metronome 
+         final-beat :last-beat
+         the-frame :window-frame} (play-song calc-fn fx-fn tempo tonic
+                                             scale-type instrument title)
+        ]
+    (while (<= (m) (+ 8 final-beat))
+        (Thread/sleep 1000))
+    (println "Done.")))
+
+(defn time-stamp-wav [s]
+  (str s
+       "_"
+       (.format (java.text.SimpleDateFormat. "yyMMdd_HHmm") (now))
+       ".wav"))
+
+;; ======================================================================
+(defn play-eso []
+  (play-song-and-wait calc-eso setup-irso-fx 80 :c3 :pentatonic sampled-piano
+                      "E Song"))
+
+(defn play-phiso []
+  (play-song-and-wait calc-phiso setup-irso-fx 80 :c3 :pentatonic sampled-piano
+                      "Phi Song"))
+
+(defn play-piso []
+  (play-song-and-wait calc-piso setup-irso-fx 80 :c3 :pentatonic sampled-piano
+                      "Pi Song"))
+
+(defn play-sqrt2so []
+  (play-song-and-wait calc-sqrt2so setup-irso-fx 80 :c3 :pentatonic sampled-piano
+                      "Sqrt2 Song"))
+
+(defn play-sqrt3so []
+  (play-song-and-wait calc-sqrt3so setup-irso-fx 80 :c3 :pentatonic sampled-piano
+                      "Sqrt3 Song"))
+
+(defn play-tauso []
+  (play-song-and-wait calc-tauso setup-irso-fx 80 :c3 :pentatonic sampled-piano
+                      "Tau Song"))
+
+;; ======================================================================
+;; main entry points for playing
+(defmacro def-main-play [name]
+  `(defn ~(symbol (str "main-play-" name)) [] 
+     (~(symbol (str "play-" name)))
+     (System/exit 0))) ;; FIXME -- is this really necessary?
+;; instantiate main entry points
+;; use (macroexpand-1 '(def-main-play eso)) to see what this expands to
+(def-main-play eso)
+(def-main-play phiso)
+(def-main-play piso)
+(def-main-play sqrt2so)
+(def-main-play sqrt3so)
+(def-main-play tauso)
+
+;; ======================================================================
+;; main entry points for recording
+(defmacro def-main-record [name]
+  `(defn ~(symbol (str "main-record-" name)) []
+     (let [~'filename (time-stamp-wav ~(str "~/" name))]
+       (println "recording to" ~'filename)
+       (recording-start ~'filename)
+       (~(symbol (str "play-" name)))
+       (recording-stop)
+       (System/exit 0))))
+
+;; instantiate main entry points
+(def-main-record eso)
+(def-main-record phiso)
+(def-main-record piso)
+(def-main-record sqrt2so)
+(def-main-record sqrt3so)
+(def-main-record tauso)
+
+;; ======================================================================
+;; repl cut-n-paste stuff
 #_(
    (use 'irso.core)
    (use 'irso.irso)
@@ -26,126 +117,3 @@
    (test-concat-seq)
    (test-concat-seq2)
 )
-  
-;; ======================================================================
-(defn play-song [calc-fn tempo tonic scale-type instrument title]
-  (let [foo (prn "Playing" title)
-        m (metronome tempo)
-        seq-list (calc-fn (m) tonic scale-type)
-        final-beat (play-seqs instrument m 10 seq-list)
-        the-frame (draw-seqs seq-list m 10 title)
-        ]
-    m))
-
-;; ======================================================================
-(defn play-song-and-wait [calc-fn tempo tonic scale-type instrument title]
-  (let [foo (println "Playing...")
-        m (metronome tempo)
-        seq-list (calc-fn (m) tonic scale-type)
-        ;; play seq some beats after startup to give some time for window to come up
-        final-beat (play-seqs instrument m 8 seq-list)
-        the-frame (draw-seqs seq-list m 8 title)
-        ]
-    (while (<= (m) (+ 8 final-beat))
-        (Thread/sleep 1000))
-    (println "Done.")))
-
-(defn time-stamp-wav [s]
-  (str s
-       "_"
-       (.format (java.text.SimpleDateFormat. "yyMMdd_HHmm") (now))
-       ".wav"))
-
-;; ======================================================================
-(defn play-eso []
-  (play-song-and-wait calc-eso 80 :c3 :pentatonic sampled-piano "E Song"))
-
-(defn play-phiso []
-  (play-song-and-wait calc-phiso 80 :c3 :pentatonic sampled-piano "Phi Song"))
-
-(defn play-piso []
-  (play-song-and-wait calc-piso 80 :c3 :pentatonic sampled-piano "Pi Song"))
-
-(defn play-sqrt2so []
-  (play-song-and-wait calc-sqrt2so 80 :c3 :pentatonic sampled-piano "Sqrt2 Song"))
-
-(defn play-sqrt3so []
-  (play-song-and-wait calc-sqrt3so 80 :c3 :pentatonic sampled-piano "Sqrt3 Song"))
-
-(defn play-tauso []
-  (play-song-and-wait calc-tauso 80 :c3 :pentatonic sampled-piano "Tau Song"))
-
-;; ======================================================================
-(defn main-play-eso []
-  (play-eso)
-  (System/exit 0))  ;; FIXME -- is this really necessary?
-
-(defn main-play-phiso []
-  (play-phiso)
-  (System/exit 0))
-
-(defn main-play-piso []
-  (play-piso)
-  (System/exit 0))
-
-(defn main-play-sqrt2so []
-  (play-sqrt2so)
-  (System/exit 0))
-
-(defn main-play-sqrt3so []
-  (play-sqrt3so)
-  (System/exit 0))
-
-(defn main-play-tauso []
-  (play-tauso)
-  (System/exit 0))
-
-;; ======================================================================
-(defn main-record-eso []
-  (let [filename (time-stamp-wav "~/eso")]
-    (println "recording to" filename)
-    (recording-start filename)
-    (play-eso)
-    (recording-stop)
-    (System/exit 0)))
-
-(defn main-record-phiso []
-  (let [filename (time-stamp-wav "~/phiso")]
-    (println "recording to" filename)
-    (recording-start filename)
-    (play-phiso)
-    (recording-stop)
-    (System/exit 0)))
-
-(defn main-record-piso []
-  (let [filename (time-stamp-wav "~/piso")]
-    (println "recording to" filename)
-    (recording-start filename)
-    (play-piso)
-    (recording-stop)
-    (System/exit 0)))
-
-(defn main-record-sqrt2so []
-  (let [filename (time-stamp-wav "~/sqrt2so")]
-    (println "recording to" filename)
-    (recording-start filename)
-    (play-sqrt2so)
-    (recording-stop)
-    (System/exit 0)))
-
-(defn main-record-sqrt3so []
-  (let [filename (time-stamp-wav "~/sqrt3so")]
-    (println "recording to" filename)
-    (recording-start filename)
-    (play-sqrt3so)
-    (recording-stop)
-    (System/exit 0)))
-
-(defn main-record-tauso []
-  (let [filename (time-stamp-wav "~/tauso")]
-    (println "recording to" filename)
-    (recording-start filename)
-    (play-tauso)
-    (recording-stop)
-    (System/exit 0)))
-
