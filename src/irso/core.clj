@@ -1,13 +1,16 @@
 (ns irso.core
   (:use [overtone.live]
         [overtone.inst.sampled-piano]
+        [irso.irno]
         [irso.irso]
         [irso.eso]
         [irso.phiso]
         [irso.piso]
         [irso.sqrt2so]
         [irso.sqrt3so]
-        [irso.tauso])
+        [irso.tauso]
+        )
+  (:gen-class)
   )
   
 ;; ======================================================================
@@ -98,6 +101,42 @@
 (def-main-record sqrt2so)
 (def-main-record sqrt3so)
 (def-main-record tauso)
+
+;; ======================================================================
+;; main main ... what should this do?
+(defn -main [& args]
+  (println "Welcome to irso! These are your args:" args)
+  ;; Hmmm lein2 deprecated :run-aliases I guess?
+  ;; :run-aliases {:eso         irso.core/main-play-eso
+  ;;               :phiso       irso.core/main-play-phiso
+  ;;               :piso        irso.core/main-play-piso
+  ;;               :sqrt2so     irso.core/main-play-sqrt2so
+  ;;               :sqrt3so     irso.core/main-play-sqrt3so
+  ;;               :tauso       irso.core/main-play-tauso
+  ;;               :rec-eso     irso.core/main-record-eso
+  ;;               :rec-phiso   irso.core/main-record-phiso
+  ;;               :rec-piso    irso.core/main-record-piso
+  ;;               :rec-sqrt2so irso.core/main-record-sqrt2so
+  ;;               :rec-sqrt3so irso.core/main-record-sqrt3so
+  ;;               :rec-tauso   irso.core/main-record-tauso
+  ;;               }
+  ;; (println "main doesn't do anything...exiting.")
+  (cond
+   (= ":eso"         (first args)) (main-play-eso)
+   (= ":phiso"       (first args)) (main-play-phiso)
+   (= ":piso"        (first args)) (main-play-piso)
+   (= ":sqrt2so"     (first args)) (main-play-sqrt2so)
+   (= ":sqrt3so"     (first args)) (main-play-sqrt3so)
+   (= ":tauso"       (first args)) (main-play-tauso)
+   (= ":rec-eso"     (first args)) (main-record-eso)
+   (= ":rec-phiso"   (first args)) (main-record-phiso)
+   (= ":rec-piso"    (first args)) (main-record-piso)
+   (= ":rec-sqrt2so" (first args)) (main-record-sqrt2so)
+   (= ":rec-sqrt3so" (first args)) (main-record-sqrt3so)
+   (= ":rec-tauso"   (first args)) (main-record-tauso)
+   true (do
+          (println "no args, nothing to do. Exiting.")
+          (System/exit 0))))
 
 ;; ======================================================================
 ;; repl cut-n-paste stuff

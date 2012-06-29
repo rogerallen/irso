@@ -1,4 +1,5 @@
 (ns irso.eso
+  (:use [irso.irno])
   (:use [irso.irso]))
 ;;  (:refer (irso.core)))
 ;;  (:use [irso.core])
