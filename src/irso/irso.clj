@@ -288,6 +288,37 @@
 
 ;; ======================================================================
 ;; fx-functions
-(defn setup-irso-fx [inst]
+(defsynth fx-my-echo
+  [bus 0 max-delay 4.0 delay-time 0.5 decay-time 1.0]
+  (let [source (in bus)
+        echo (comb-c source max-delay delay-time decay-time)]
+    (replace-out bus (pan2 (+ echo source) 0))))
+
+(defsynth fx-my-reverb
+  [bus 0
+   roomsize 30.0
+   revtime 4.50
+   damping 0.40
+   inputbw 0.39
+   spread 14.93
+   drylevel 0.25
+   earlyreflevel 0.20
+   taillevel 0.10
+   lpf-freq 1000.0
+   maxroomsize 300.0
+   gate 1.0]
+  (let [source (in bus)
+        my-reverb (* gate
+                     (g-verb (* gate source)
+                             roomsize revtime damping inputbw spread
+                             drylevel earlyreflevel taillevel maxroomsize))
+        lpf-reverb (lpf my-reverb lpf-freq)]
+    (replace-out bus (+ lpf-reverb source))))
+
+(defn setup-irso-fx [inst tempo]
   (clear-fx inst)
-  (def fx1 (inst-fx! sampled-piano fx-reverb)))
+  (def fx1 (inst-fx! inst fx-my-reverb))
+  ;;(ctl fx1 :max-delay (* 3 (* (/ 60. tempo) 1.61803)))
+  ;;(ctl fx1 :delay-time (* (/ 60. tempo) 1.61803))
+  ;;(ctl fx1 :decay-time (* 3.0 (/ 60. tempo)))
+  )

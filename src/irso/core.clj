@@ -17,7 +17,7 @@
 (defn play-song [calc-fn fx-fn tempo tonic scale-type instrument title]
   (let [m (metronome tempo)
         seq-list (calc-fn (m) tonic scale-type)
-        foo (fx-fn instrument)
+        foo (fx-fn instrument tempo)
         ;; play seq some beats after startup to give some time for window to come up
         final-beat (play-seqs instrument m 8 seq-list)
         the-frame (draw-seqs seq-list m 8 title)
