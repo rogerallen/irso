@@ -13,19 +13,15 @@ We'll see where this goes.
 
 ## Usage
 
-To play a song, use lein run :<song> to listen to the song.  This will
+To play a song, use lein run :&lt;song&gt; to listen to the song.  This will
 also display a window with an overview of the song's sequences.
 
-To record a song, use lein run :rec-<song>
+To record a song, use lein run :rec-&lt;song&gt;
 
-<song> is one of eso, phiso, piso, sqrt2so, sqrt3so or tauso
+&lt;song&gt; is one of eso, phiso, piso, sqrt2so, sqrt3so or tauso
 
 Still, if you are interested you should browse the source and play at
 the repl.
-
-*NOTE* on the first "lein run" you will likely get an error.  Just
-Ctrl-C, retry and it should work after that.  See
-https://github.com/overtone/overtone/issues/108
 
 ## License
 
