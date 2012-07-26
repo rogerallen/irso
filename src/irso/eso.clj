@@ -1,6 +1,7 @@
 (ns irso.eso
-  (:use [irso.irno])
-  (:use [irso.irso]))
+  (:use [irso.irno]
+        [irso.irso]
+        [irso.rhythm :only [pwl-fn]]))
 ;;  (:refer (irso.core)))
 ;;  (:use [irso.core])
 ;;  (:use [overtone.core])
@@ -57,9 +58,9 @@
           theme-seq3r
           concl-seq)))
 
-;; ======================================================================
-;; Add effects to create the proper mood
-
-;; TBD
-
-
+(def eso-tempo-points
+  [   0.0 20.0
+     17.0 80.0
+    453.0 80.01
+    473.0 20.0
+   1000.0 20.01])

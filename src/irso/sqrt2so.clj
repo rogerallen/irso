@@ -54,4 +54,6 @@
           theme-seq3r
           concl-seq)))
 
-
+(def sqrt2so-tempo-points
+  [   0.0 80.0
+   1000.0 80.01])

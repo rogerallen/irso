@@ -1,6 +1,7 @@
 (ns irso.irso
   (:use [overtone.live]
-        [overtone.inst.sampled-piano])
+        [overtone.inst.sampled-piano]
+        [irso.rhythm :only [pwl-fn vr-metro-now-beat vr-metro-time]])
   (:require [quil.core])
   )
 
@@ -162,10 +163,12 @@
              cur-level (velocity2level (:velocity cur-snote))
              cur-dur (:duration cur-snote)
              cur-beat (+ in-beat (:beat cur-snote))
+             cur-tick (m cur-beat)
+             ;;_ (println "play-seq" cur-beat (long (- cur-tick (metro-start m))) (long cur-tick) cur-pitch)
              k-beat 1.6
-             cur-inst (at (m cur-beat) (inst :note cur-pitch
-                                             :level cur-level
-                                             :attack cur-attack))]
+             cur-inst (at cur-tick (inst :note cur-pitch
+                                         :level cur-level
+                                         :attack cur-attack))]
          (at (m (+ cur-beat (* k-beat cur-dur))) (ctl cur-inst :gate 0))
          (+ cur-beat cur-dur))))))
   
@@ -175,6 +178,23 @@
   (last
    (for [snote-seq snote-seqs]
      (play-seq inst m in-beat snote-seq))))
+
+;; ======================================================================
+;; a test sequence
+(defn calc-testso [beat tonic type]
+  (let [foo (println "test song")
+        irno-seq (concat (take 32 (cycle (range 10))) ;; pitch
+                         (repeat 32 6)                ;; velocity
+                         (repeat 32 3))               ;; duration
+        seq1 (calc-seq tonic type 32 irno-seq)]
+    (list seq1)))
+(def testso-tempo-points
+  [   0.00  20.0
+      9.99  80.0
+     10.00 120.0
+     20.00 120.01
+     30.00  80.0
+   1000.00  80.01])
 
 ;; ======================================================================
 ;; code for displaying sequences
@@ -221,8 +241,11 @@
         draw-h (- (* (+ seq-h seq-space2) (count snote-seqs)) seq-space2)
         h (+ (* 2 seq-space) draw-h)
         max-seq-beats (reduce max (map max-beat snote-seqs))
-        cur-beat (- (/ (- (now) (metro-start the-metronome))
-                       (metro-tick the-metronome)) offset-beat)
+        ;;cur-beat (- (/ (- (now) (metro-start the-metronome))
+        ;;               (metro-tick the-metronome)) offset-beat)
+        cur-beat (- (vr-metro-now-beat the-metronome) offset-beat)
+        cur-tick (now) ;;(vr-metro-time the-metronome cur-beat)
+        ;;_ (println "q-cur-beat" cur-beat (long (- cur-tick (metro-start the-metronome))) (long cur-tick))
         ]
     ;; background
     (apply quil.core/fill (:base1 base-colors))
@@ -315,10 +338,6 @@
         lpf-reverb (lpf my-reverb lpf-freq)]
     (replace-out bus (+ lpf-reverb source))))
 
-(defn setup-irso-fx [inst tempo]
+(defn setup-irso-fx [inst]
   (clear-fx inst)
-  (def fx1 (inst-fx! inst fx-my-reverb))
-  ;;(ctl fx1 :max-delay (* 3 (* (/ 60. tempo) 1.61803)))
-  ;;(ctl fx1 :delay-time (* (/ 60. tempo) 1.61803))
-  ;;(ctl fx1 :decay-time (* 3.0 (/ 60. tempo)))
-  )
+  (def fx1 (inst-fx! inst fx-my-reverb)))
