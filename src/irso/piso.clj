@@ -54,31 +54,15 @@
           theme-seq3r
           concl-seq)))
 
-;; ======================================================================
-;; Add effects to create the proper mood
-#_(do 
-  ;;(def fx0 (inst-fx sampled-piano fx-freeverb))
-  ;;(ctl fx0 :room-size 1.5)
-  ;;(ctl fx0 :dampening 0.5)
-  ;;(ctl fx0 :wet-dry   0.5) ;; dry = direct.  wet = reflections
-  ;;
-  ;; hmm, freeverb seems to resolve eventually to a "ringing" tone that
-  ;; is distracting.
-  
-  ;; try just reverb...
-  (def fx1 (inst-fx sampled-piano fx-reverb))
-  
-  ;; using lowpass filter to remove "ringing" tone.  
-  (defsynth fx-lpf
-    [bus 0 freq 20000]
-    (let [src (in bus)]
-      (replace-out bus (lpf src freq))))
-  (def fx2 (inst-fx sampled-piano fx-lpf))
-  (ctl fx2 :freq      2400)
-  )
-;; should also try 'panning' the cutoff frequencies, etc. during music
-;;(clear-fx sampled-piano)
-
 (def piso-tempo-points
-  [   0.0 80.0
-   1000.0 80.01])
+  [0.0    20.0
+   17.0   100.0
+   105.0  80.0
+   118.0  100.0
+   131.0  80.0
+   200.0  105.0
+   300.0  90.0
+   400.0  95.0
+   500.0  90.0
+   513.0  20.0
+   1000.0 20.01])

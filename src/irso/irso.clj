@@ -263,7 +263,7 @@
             y0 (+ seq-space (* (+ seq-h seq-space2) i))
             y1 seq-h]
         ;;(println i "drawRect" x0 y0 x1 y1)
-        (quil.core/stroke-weight 1.2)
+        (quil.core/stroke-weight 0.8)
         (apply quil.core/fill (:base2 base-colors)) 
         (apply quil.core/stroke (:base02 base-colors))
         (quil.core/rect x0 y0 x1 y1)
@@ -278,7 +278,7 @@
                       (* seq-h (/ (:pitch snote) 127)))]
             ;;(println "drawStroke" nx0 nx1 ny)
             (if (and (>= cur-beat (:beat snote)) (<= cur-beat (+ (:beat snote) (:duration snote))))
-              (do (quil.core/stroke-weight 3.0)
+              (do (quil.core/stroke-weight 2.5)
                   (apply quil.core/stroke (:base00 base-colors)))
               (do
                 (quil.core/stroke-weight 1.5)
@@ -288,11 +288,11 @@
     ;; draw line for metronome
     (if (and (>= cur-beat 0) (<= cur-beat max-seq-beats))
       (let [bx (+ seq-space (* seq-w (/ cur-beat max-seq-beats)))]
-        (quil.core/stroke-weight 2.0)
+        (quil.core/stroke-weight 1.0)
         (apply quil.core/stroke (:base03 base-colors))
         (quil.core/line bx seq-space bx (+ seq-space draw-h))))
     ;; draw top rect outline
-    (quil.core/stroke-weight 2.0)
+    (quil.core/stroke-weight 0.5)
     (quil.core/no-fill)
     (apply quil.core/stroke (:base02 base-colors))
     (quil.core/rect seq-space seq-space draw-w draw-h)))
