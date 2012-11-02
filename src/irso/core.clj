@@ -1,6 +1,8 @@
 (ns irso.core
   (:use [overtone.live]
-        [overtone.inst.sampled-piano]
+        ;;[overtone.inst.sampled-piano]
+        ;;[oversampler.cello.inst]
+        [oversampler.piano.inst]
         [irso.rhythm]
         [irso.irno]
         [irso.irso]
@@ -50,49 +52,49 @@
 (defn play-eso []
   (play-song-and-wait
    calc-eso setup-irso-fx eso-tempo-points
-   :c3 :pentatonic
+   :e3 :lydian
    sampled-piano
    "E Song"))
 
 (defn play-phiso []
   (play-song-and-wait
    calc-phiso setup-irso-fx phiso-tempo-points
-   :c3 :pentatonic
+   :f3 :pentatonic
    sampled-piano
    "Phi Song"))
 
 (defn play-piso []
   (play-song-and-wait
    calc-piso setup-irso-fx piso-tempo-points
-   :c3 :pentatonic
+   :g3 :major-pentatonic
    sampled-piano
    "Pi Song"))
 
 (defn play-sqrt2so []
   (play-song-and-wait
    calc-sqrt2so setup-irso-fx sqrt2so-tempo-points
-   :c3 :pentatonic
+   :a3 :minor-pentatonic
    sampled-piano
    "Sqrt2 Song"))
 
 (defn play-sqrt3so []
   (play-song-and-wait
    calc-sqrt3so setup-irso-fx sqrt3so-tempo-points
-   :c3 :pentatonic
+   :b3 :pentatonic ;; minor sucks
    sampled-piano
    "Sqrt3 Song"))
 
 (defn play-tauso []
   (play-song-and-wait
    calc-tauso setup-irso-fx tauso-tempo-points
-   :c3 :pentatonic
+   :c3 :locrian
    sampled-piano
    "Tau Song"))
 
 (defn play-testso []
   (play-song-and-wait
    calc-testso setup-irso-fx testso-tempo-points
-   :c3 :pentatonic
+   :d3 :pentatonic
    sampled-piano
    "Test Song"))
 
@@ -135,21 +137,6 @@
 ;; main main ... what should this do?
 (defn -main [& args]
   (println "Welcome to irso! These are your args:" args)
-  ;; Hmmm lein2 deprecated :run-aliases I guess?
-  ;; :run-aliases {:eso         irso.core/main-play-eso
-  ;;               :phiso       irso.core/main-play-phiso
-  ;;               :piso        irso.core/main-play-piso
-  ;;               :sqrt2so     irso.core/main-play-sqrt2so
-  ;;               :sqrt3so     irso.core/main-play-sqrt3so
-  ;;               :tauso       irso.core/main-play-tauso
-  ;;               :rec-eso     irso.core/main-record-eso
-  ;;               :rec-phiso   irso.core/main-record-phiso
-  ;;               :rec-piso    irso.core/main-record-piso
-  ;;               :rec-sqrt2so irso.core/main-record-sqrt2so
-  ;;               :rec-sqrt3so irso.core/main-record-sqrt3so
-  ;;               :rec-tauso   irso.core/main-record-tauso
-  ;;               }
-  ;; (println "main doesn't do anything...exiting.")
   (cond
    (= ":eso"         (first args)) (main-play-eso)
    (= ":phiso"       (first args)) (main-play-phiso)

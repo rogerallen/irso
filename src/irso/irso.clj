@@ -1,6 +1,5 @@
 (ns irso.irso
   (:use [overtone.live]
-        [overtone.inst.sampled-piano]
         [irso.rhythm :only [pwl-fn vr-metro-now-beat vr-metro-time]])
   (:require [quil.core])
   )
@@ -31,7 +30,7 @@
 (defn index2velocity
   "given a digit 'n' in range 0..9, find a velocity to play"
   [index]
-  (+ 80 (* 3 index)))
+  (+ 20 (* 8 index)))
 
 (defn velocity2attack
   "sampled-piano uses attack & level, not velocity"
@@ -41,7 +40,7 @@
 (defn velocity2level
   "sampled-piano uses attack & level, not velocity"
   [v]
-  (linear-map 0 127 0.0 0.8 v))
+  (linear-map 0 127 0.0 1.0 v))
 
 (defn index2duration
   "given a digit 'n' in range 0..9, find a length in beats"
