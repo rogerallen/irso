@@ -97,6 +97,7 @@
    :d3 :pentatonic
    sampled-piano
    "Test Song"))
+;;(play-testso)
 
 ;; ======================================================================
 ;; main entry points for playing

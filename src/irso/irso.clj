@@ -188,8 +188,8 @@
         seq1 (calc-seq tonic type 32 irno-seq)]
     (list seq1)))
 (def testso-tempo-points
-  [   0.00  20.0
-      9.99  80.0
+  [   0.00  60.0
+      ;9.99  80.0
      10.00 120.0
      20.00 120.01
      30.00  80.0
@@ -318,14 +318,14 @@
 
 (defsynth fx-my-reverb
   [bus 0
-   roomsize 30.0
-   revtime 4.50
-   damping 0.40
-   inputbw 0.39
-   spread 14.93
-   drylevel 0.25
-   earlyreflevel 0.20
-   taillevel 0.10
+   roomsize 40.0
+   revtime 4.0
+   damping 0.80
+   inputbw 0.5
+   spread 15.0
+   drylevel 0.5
+   earlyreflevel 0.40
+   taillevel 0.20
    lpf-freq 1000.0
    maxroomsize 300.0
    gate 1.0]
