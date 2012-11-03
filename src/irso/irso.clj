@@ -303,7 +303,7 @@
         draw-h (- (* (+ seq-h seq-space2) (count snote-seqs)) seq-space2)
         h (+ (* 2 seq-space) draw-h)]
     (quil.core/defsketch window-sketch
-      :title "window-name" ;; FIXME
+      :title (str window-name)
       :setup window-setup
       :draw (partial window-draw snote-seqs the-metronome offset-beat)
       :size [(* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit)))) h])))
@@ -318,12 +318,12 @@
 
 (defsynth fx-my-reverb
   [bus 0
-   roomsize 40.0
-   revtime 4.0
-   damping 0.80
-   inputbw 0.5
-   spread 15.0
-   drylevel 0.5
+   roomsize 40.0 ;; in m^2
+   revtime 4.0   ;; in sec
+   damping 0.80  ;; high freq rolloff 0=totally, 1=not at all
+   inputbw 0.5   ;; ditto, but on the input signal
+   spread 15.0   ;; stereo spread of reverb
+   drylevel 0.5  
    earlyreflevel 0.40
    taillevel 0.20
    lpf-freq 1000.0
@@ -337,6 +337,24 @@
         lpf-reverb (lpf my-reverb lpf-freq)]
     (replace-out bus (+ lpf-reverb source))))
 
+(defsynth fx-my-echo
+  [bus 0 echo-level 1.0 max-delay 8.0 delay-time 0.4 decay-time 2.0]
+  (let [source (in bus)
+        echo (comb-n source max-delay delay-time decay-time)]
+    (replace-out bus (pan2 (+ (* echo-level echo) source) 0))))
+
 (defn setup-irso-fx [inst]
   (clear-fx inst)
-  (def fx1 (inst-fx! inst fx-my-reverb)))
+  (def fx1 (inst-fx! inst fx-my-reverb))
+  (ctl fx1
+       :roomsize 150.0 :revtime 1.0
+       :damping 0.1 :inputbw 1.0 :spread 1.0
+       :drylevel 1.0 :earlyreflevel 0.6 :taillevel 0.3
+       :lpf-freq 1000.0)
+  (def fx2 (inst-fx! inst fx-my-echo))
+  (ctl fx2
+       :echo-level 0.3 :max-delay 8.0
+       :delay-time 1.5 :decay-time 5.0)
+  )
+;;(setup-irso-fx oversampler.piano.inst/sampled-piano)
+
