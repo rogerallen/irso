@@ -52,14 +52,13 @@
     true ([ 4.00 2.00 1.50 1.00 0.75 0.75 0.50 0.50 0.50 0.50] index)  ;; 8x range
     false  ([ 4.00 2.00 1.50 1.50 1.25 1.25 1.00 1.00 1.00 1.00] index))) ;; 4x range
 
-(defn inote2snote
+(defn inote2snote [tonic type cur-inote]
   "given an index-note, create a sequence-note with a place for a beat."
-  [tonic type cur-inote]
-  (hash-map
-   :pitch (index2pitch tonic type (:pitch-index cur-inote))
-   :velocity (index2velocity (:velocity-index cur-inote))
-   :duration (index2duration (:duration-index cur-inote))
-   :beat 0))
+  (let [{:keys [pitch-index velocity-index duration-index]} cur-inote]
+    {:pitch (index2pitch tonic type pitch-index)
+     :velocity (index2velocity velocity-index)
+     :duration (index2duration duration-index)
+     :beat 0}))
 
 (defn duration2beat
   "given 2 sequence notes, overwrite the nxt beat"
