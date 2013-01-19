@@ -164,11 +164,10 @@
              cur-tick (m cur-beat)
              ;;_ (println "play-seq" cur-beat (long (- cur-tick (metro-start m))) (long cur-tick) cur-pitch)
              k-beat 1.6
-             ;; Use of :id bypasses some Overtone checks--dangerous
-             ;; see Overtone Issue #210
-             cur-inst (:id (at cur-tick (inst :note cur-pitch
-                                              :level cur-level
-                                              :attack cur-attack)))]
+             ;; Note: see Overtone Issue #210
+             cur-inst (at cur-tick (inst :note cur-pitch
+                                         :level cur-level
+                                         :attack cur-attack))]
          (at (m (+ cur-beat (* k-beat cur-dur))) (ctl cur-inst :gate 0))
          (+ cur-beat cur-dur))))))
   
