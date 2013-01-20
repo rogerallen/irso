@@ -318,7 +318,7 @@
 
 (defsynth fx-my-reverb
   [bus 0
-   roomsize 40.0 ;; in m^2
+   roomsize 150.0 ;; in m^2
    revtime 4.0   ;; in sec
    damping 0.80  ;; high freq rolloff 0=totally, 1=not at all
    inputbw 0.5   ;; ditto, but on the input signal
@@ -347,7 +347,9 @@
   (clear-fx inst)
   (def fx1 (inst-fx! inst fx-my-reverb))
   (ctl fx1
-       :roomsize 150.0 :revtime 1.0
+       ;; do NOT change roomsize! :roomsize 150.0
+       ;; see Overtone Issue #213
+       :revtime 1.0
        :damping 0.1 :inputbw 1.0 :spread 1.0
        :drylevel 1.0 :earlyreflevel 0.6 :taillevel 0.3
        :lpf-freq 1000.0)
@@ -356,5 +358,7 @@
        :echo-level 0.3 :max-delay 8.0
        :delay-time 1.5 :decay-time 5.0)
   )
+;;(use 'overtone.inst.sampled-piano)
+;;(setup-irso-fx overtone.inst.sampled-piano/sampled-piano)
 ;;(setup-irso-fx oversampler.piano.inst/sampled-piano)
 

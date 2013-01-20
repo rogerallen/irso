@@ -1,8 +1,8 @@
 (ns irso.core
   (:use [overtone.live]
-        [overtone.inst.sampled-piano]
+        ;;[overtone.inst.sampled-piano]
         ;;[oversampler.cello.inst]
-        ;;[oversampler.piano.inst]
+        [oversampler.piano.inst]
         [irso.rhythm]
         [irso.irno]
         [irso.irso]
