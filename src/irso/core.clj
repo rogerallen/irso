@@ -60,7 +60,7 @@
   (play-song-and-wait
    calc-phiso setup-irso-fx phiso-tempo-points
    :f3 :pentatonic
-   sampled-piano
+   sampled-piano 
    "Phi Song"))
 
 (defn play-piso []

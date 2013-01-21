@@ -167,7 +167,8 @@
              ;; Note: see Overtone Issue #210
              cur-inst (at cur-tick (inst :note cur-pitch
                                          :level cur-level
-                                         :attack cur-attack))]
+                                         :attack cur-attack
+                                         :play-buf-action NO-ACTION))]
          (at (m (+ cur-beat (* k-beat cur-dur))) (ctl cur-inst :gate 0))
          (+ cur-beat cur-dur))))))
   
