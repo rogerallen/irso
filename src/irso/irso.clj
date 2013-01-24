@@ -231,7 +231,7 @@
   (quil.core/frame-rate 30) ;; 60 made for a hot laptop...
   (apply quil.core/background (:base1 base-colors)))
 
-(defn window-draw [snote-seqs the-metronome offset-beat] ;; offset to give time for window to popup
+(defn window-draw [snote-seqs the-metronome offset-beat min-seq-pitch max-seq-pitch] ;; offset to give time for window to popup
   (let [seq-space 10
         seq-space2 4
         w (quil.core/width)
@@ -275,7 +275,8 @@
                        (* seq-w (/ (+ (:beat snote) (:duration snote))
                                    max-seq-beats)))
                 ny (- (+ y0 y1)
-                      (* seq-h (/ (:pitch snote) 127)))]
+                      (* seq-h (/ (- (:pitch snote) min-seq-pitch)
+                                  (- max-seq-pitch min-seq-pitch))))]
             ;;(println "drawStroke" nx0 nx1 ny)
             (if (and (>= cur-beat (:beat snote)) (<= cur-beat (+ (:beat snote) (:duration snote))))
               (do (quil.core/stroke-weight 2.5)
@@ -302,11 +303,16 @@
         seq-space 10
         seq-space2 4
         draw-h (- (* (+ seq-h seq-space2) (count snote-seqs)) seq-space2)
-        h (+ (* 2 seq-space) draw-h)]
+        h (+ (* 2 seq-space) draw-h)
+        min-seq-pitch (apply min (map #(:pitch %) (reduce into snote-seqs)))
+        min-seq-pitch (max (- min-seq-pitch 8) 0)
+        max-seq-pitch (apply max (map #(:pitch %) (reduce into snote-seqs)))
+        max-seq-pitch (min (+ max-seq-pitch 8) 127)]
     (quil.core/defsketch window-sketch
       :title (str window-name)
       :setup window-setup
-      :draw (partial window-draw snote-seqs the-metronome offset-beat)
+      :draw (partial window-draw snote-seqs the-metronome offset-beat
+                     min-seq-pitch max-seq-pitch)
       :size [(* 0.95 (.width (.getScreenSize (java.awt.Toolkit/getDefaultToolkit)))) h])))
 
 ;; ======================================================================

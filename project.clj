@@ -1,7 +1,7 @@
 (defproject irso "1.0.0-SNAPSHOT"
   :description "Irrational Songs in Overtone"
   :dependencies [ [org.clojure/clojure "1.4.0"]
-                  [overtone "0.8.0-RC19"]
+                  [overtone "0.8.0-RC20"]
                   [quil "1.6.0"]
                   [oversampler "0.3.0-SNAPSHOT"]
                   ]
